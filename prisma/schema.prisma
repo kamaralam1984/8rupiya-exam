@@ -1,0 +1,499 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  CREATED
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum AiJobStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum AiJobKind {
+  PDF_TO_MCQ
+  PREDICTED_SET
+  WEAKNESS_REPORT
+  REVISION_NOTES
+}
+
+enum QuestionType {
+  MCQ
+  ASSERTION_REASON
+  TRUE_FALSE
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String?        @unique
+  phone         String?        @unique
+  name          String?
+  passwordHash  String?
+  role          Role           @default(STUDENT)
+  language      String         @default("en")
+  xp            Int            @default(0)
+  streak        Int            @default(0)
+  lastSeenAt    DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  attempts      Attempt[]
+  payments      Payment[]
+  subscriptions Subscription[]
+  unlocks       Unlock[]
+  aiJobs        AiJob[]
+  doubts        Doubt[]
+  studyPlans    StudyPlan[]
+  bookmarks     Bookmark[]
+  badges        UserBadge[]
+  resetTokens   PasswordResetToken[]
+  wallet        Wallet?
+  walletTxns    WalletTxn[]
+  referralCode  String?  @unique
+  emailVerifiedAt DateTime?
+  referredById  String?
+  referredBy    User?    @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referred      User[]   @relation("Referrals")
+  examTrack     String?
+  onboardedAt   DateTime?
+  emailTokens   EmailVerificationToken[]
+  reportsFiled  QuestionReport[]
+  pushSubs      PushSubscription[]
+  auditLogs     AuditLog[]
+
+  @@index([email])
+  @@index([phone])
+}
+
+model Exam {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  name        String
+  short       String
+  description String
+  durationMin Int        @default(60)
+  questions   Int        @default(50)
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+
+  subjects    Subject[]
+  testSets    TestSet[]
+  pdfs        Pdf[]
+}
+
+model Subject {
+  id        String    @id @default(cuid())
+  examId    String
+  name      String
+  slug      String
+  /// When splitEnabled=true and children exist, dropdowns surface the children
+  /// instead of the combined parent. Toggles "Science (combined)" vs
+  /// "Physics + Chemistry + Biology (separate)" without losing either view.
+  splitEnabled Boolean @default(false)
+  parentId  String?
+  exam      Exam      @relation(fields: [examId], references: [id], onDelete: Cascade)
+  parent    Subject?  @relation("SubjectChildren", fields: [parentId], references: [id], onDelete: SetNull)
+  children  Subject[] @relation("SubjectChildren")
+  chapters  Chapter[]
+  questions Question[]
+
+  @@unique([examId, slug])
+  @@index([parentId])
+}
+
+model Chapter {
+  id        String     @id @default(cuid())
+  subjectId String
+  name      String
+  weight    Float      @default(1.0)
+  subject   Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  questions Question[]
+}
+
+model Question {
+  id           String        @id @default(cuid())
+  subjectId    String?
+  chapterId    String?
+  type         QuestionType  @default(MCQ)
+  stem         String
+  options      Json
+  correctIndex Int
+  explanation  String?
+  difficulty   Difficulty    @default(MEDIUM)
+  language     String        @default("en")
+  source       String?
+  approved     Boolean       @default(false)
+  aiGenerated  Boolean       @default(false)
+  isPyq        Boolean       @default(false)
+  year         Int?
+  topic        String?
+  examSlug     String?
+  pdfId        String?
+  createdAt    DateTime      @default(now())
+
+  subject   Subject?  @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  chapter   Chapter?  @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  pdf       Pdf?      @relation(fields: [pdfId], references: [id], onDelete: SetNull)
+
+  testSetQuestions TestSetQuestion[]
+  answers          Answer[]
+  translations     QuestionTranslation[]
+
+  @@index([subjectId, approved])
+  @@index([chapterId])
+  @@index([examSlug, year, isPyq])
+  @@index([isPyq, year])
+}
+
+model QuestionTranslation {
+  id          String   @id @default(cuid())
+  questionId  String
+  language    String
+  stem        String
+  options     Json
+  explanation String?
+  createdAt   DateTime @default(now())
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, language])
+}
+
+model TestSet {
+  id           String   @id @default(cuid())
+  examId       String
+  title        String
+  slug         String   @unique
+  description  String?
+  kind         String   @default("MOCK")
+  durationMin  Int      @default(60)
+  isPremium    Boolean  @default(true)
+  priceInPaise Int      @default(800)
+  isPublished  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  exam      Exam              @relation(fields: [examId], references: [id], onDelete: Cascade)
+  questions TestSetQuestion[]
+  attempts  Attempt[]
+  unlocks   Unlock[]
+}
+
+model TestSetQuestion {
+  id          String   @id @default(cuid())
+  testSetId   String
+  questionId  String
+  order       Int
+  marksRight  Float    @default(1.0)
+  marksWrong  Float    @default(-0.25)
+
+  testSet  TestSet  @relation(fields: [testSetId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([testSetId, order])
+  @@unique([testSetId, questionId])
+}
+
+model Attempt {
+  id          String         @id @default(cuid())
+  userId      String
+  testSetId   String
+  status      AttemptStatus  @default(IN_PROGRESS)
+  startedAt   DateTime       @default(now())
+  submittedAt DateTime?
+  durationSec Int?
+  score       Float?
+  accuracy    Float?
+  meta        Json?
+
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testSet TestSet   @relation(fields: [testSetId], references: [id], onDelete: Cascade)
+  answers Answer[]
+
+  @@index([userId, status])
+}
+
+model Answer {
+  id            String   @id @default(cuid())
+  attemptId     String
+  questionId    String
+  selectedIndex Int?
+  isCorrect     Boolean?
+  timeSpentMs   Int?
+  flagged       Boolean  @default(false)
+  guessed       Boolean  @default(false)
+
+  attempt  Attempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, questionId])
+}
+
+model Payment {
+  id               String        @id @default(cuid())
+  userId           String
+  razorpayOrderId  String        @unique
+  razorpayPaymentId String?      @unique
+  amountInPaise    Int
+  currency         String        @default("INR")
+  status           PaymentStatus @default(CREATED)
+  purpose          String
+  meta             Json?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  unlocks Unlock[]
+
+  @@index([userId, status])
+}
+
+model Unlock {
+  id         String   @id @default(cuid())
+  userId     String
+  testSetId  String
+  paymentId  String?
+  unlockedAt DateTime @default(now())
+  expiresAt  DateTime?
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testSet TestSet  @relation(fields: [testSetId], references: [id], onDelete: Cascade)
+  payment Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, testSetId])
+}
+
+model Subscription {
+  id                    String   @id @default(cuid())
+  userId                String
+  plan                  String
+  startsAt              DateTime @default(now())
+  endsAt                DateTime
+  active                Boolean  @default(true)
+  razorpaySubscriptionId String? @unique
+  razorpayPlanId        String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, active])
+}
+
+model Pdf {
+  id          String   @id @default(cuid())
+  examId      String?
+  uploadedBy  String?
+  filename    String
+  storagePath String
+  pageCount   Int?
+  fileSize    Int?
+  config      Json?
+  status      String   @default("UPLOADED")
+  createdAt   DateTime @default(now())
+
+  exam      Exam?      @relation(fields: [examId], references: [id], onDelete: SetNull)
+  questions Question[]
+  jobs      AiJob[]
+}
+
+model AiJob {
+  id        String       @id @default(cuid())
+  userId    String?
+  pdfId     String?
+  kind      AiJobKind
+  status    AiJobStatus  @default(QUEUED)
+  input     Json
+  output    Json?
+  error     String?
+  cost      Float?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  pdf  Pdf?  @relation(fields: [pdfId], references: [id], onDelete: SetNull)
+
+  @@index([status, kind])
+}
+
+model Doubt {
+  id        String   @id @default(cuid())
+  userId    String
+  question  String
+  imageUrl  String?
+  language  String   @default("en")
+  answer    String?
+  steps     Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  kind      String   // "question" | "flashcard" | "note" | "currentAffair"
+  payload   Json     // free-form snapshot
+  label     String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind, createdAt])
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  code      String
+  awardedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, code])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  balance   Int      @default(0) // in paise
+  currency  String   @default("INR")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WalletTxn {
+  id        String   @id @default(cuid())
+  userId    String
+  kind      String   // CREDIT | DEBIT
+  amount    Int      // paise
+  reason    String
+  meta      Json?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model QuestionReport {
+  id         String   @id @default(cuid())
+  questionId String
+  userId     String
+  reason     String
+  note       String?
+  status     String   @default("OPEN") // OPEN | RESOLVED | REJECTED
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  target    String?
+  meta      Json?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DailyAffairsQuiz {
+  id        String   @id @default(cuid())
+  date      String   @unique // YYYY-MM-DD
+  questions Json
+  createdAt DateTime @default(now())
+}
+
+model StudyPlan {
+  id         String   @id @default(cuid())
+  userId     String
+  examSlug   String
+  days       Int      @default(30)
+  hoursDaily Float    @default(2.0)
+  language   String   @default("en")
+  goal       String?
+  plan       Json
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model FeatureFlag {
+  key          String   @id
+  label        String
+  description  String?
+  enabled      Boolean  @default(true)
+  requiresPaid Boolean  @default(false)
+  sortOrder    Int      @default(0)
+  updatedAt    DateTime @updatedAt
+}
+
+model PlatformSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

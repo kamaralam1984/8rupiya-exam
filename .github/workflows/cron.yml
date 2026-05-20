@@ -1,0 +1,17 @@
+name: Daily current-affairs
+
+on:
+  schedule:
+    - cron: "0 0 * * *"   # 00:00 UTC daily
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit current-affairs endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SITE_URL: ${{ secrets.SITE_URL }}
+        run: |
+          curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$SITE_URL/api/cron/current-affairs"

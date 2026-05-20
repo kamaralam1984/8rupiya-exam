@@ -1,0 +1,45 @@
+{
+  "$comment": "Apply via Cloudflare → Rules → Page Rules / Cache Rules. Adjust patterns for your zone.",
+  "page_rules": [
+    {
+      "match": "https://8rupia.in/*",
+      "actions": ["Always Use HTTPS", "Cache Level: Standard", "Auto Minify: HTML, CSS, JS", "Brotli"]
+    },
+    {
+      "match": "https://8rupia.in/api/*",
+      "actions": ["Cache Level: Bypass", "Disable Performance"]
+    },
+    {
+      "match": "https://8rupia.in/admin/*",
+      "actions": ["Cache Level: Bypass"]
+    },
+    {
+      "match": "https://8rupia.in/test/*",
+      "actions": ["Cache Level: Bypass"]
+    },
+    {
+      "match": "https://8rupia.in/attempt/*",
+      "actions": ["Cache Level: Bypass"]
+    },
+    {
+      "match": "https://8rupia.in/dashboard*",
+      "actions": ["Cache Level: Bypass"]
+    }
+  ],
+  "ssl_tls": "Full (strict)",
+  "always_use_https": true,
+  "tls_minimum": "1.2",
+  "http3": true,
+  "early_hints": true,
+  "bot_fight_mode": true,
+  "browser_cache_ttl_static": 604800,
+  "edge_cache_ttl_static": 2592000,
+  "firewall_rules": [
+    {
+      "description": "Allow Razorpay webhook only",
+      "expression": "(http.request.uri.path eq \"/api/payments/webhook\")",
+      "action": "skip",
+      "products": ["bicFightMode", "rateLimit"]
+    }
+  ]
+}

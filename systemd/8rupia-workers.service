@@ -1,0 +1,23 @@
+[Unit]
+Description=8Rupia BullMQ workers
+After=network.target redis-server.service postgresql.service
+
+[Service]
+Type=simple
+User=deploy
+Group=deploy
+WorkingDirectory=/var/www/8rupia
+EnvironmentFile=/var/www/8rupia/.env.production
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node node_modules/.bin/tsx workers/index.ts
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
