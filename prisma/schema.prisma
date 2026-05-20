@@ -8,7 +8,9 @@ datasource db {
 }
 
 enum Role {
-  STUDENT
+  FREE
+  PREMIUM
+  FAMILY
   ADMIN
 }
 
@@ -57,7 +59,7 @@ model User {
   phone         String?        @unique
   name          String?
   passwordHash  String?
-  role          Role           @default(STUDENT)
+  role          Role           @default(FREE)
   language      String         @default("en")
   xp            Int            @default(0)
   streak        Int            @default(0)
@@ -85,6 +87,7 @@ model User {
   examTrack     String?
   onboardedAt   DateTime?
   emailTokens   EmailVerificationToken[]
+  emailOtps     EmailOtp[]
   reportsFiled  QuestionReport[]
   pushSubs      PushSubscription[]
   auditLogs     AuditLog[]
@@ -315,11 +318,14 @@ model Pdf {
   fileSize    Int?
   config      Json?
   status      String   @default("UPLOADED")
+  sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
 
   exam      Exam?      @relation(fields: [examId], references: [id], onDelete: SetNull)
   questions Question[]
   jobs      AiJob[]
+
+  @@index([examId, sortOrder])
 }
 
 model AiJob {
@@ -496,4 +502,29 @@ model PlatformSetting {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
+}
+
+enum EmailOtpPurpose {
+  VERIFY
+  RESET
+}
+
+model EmailOtp {
+  id        String          @id @default(cuid())
+  /// Hashed user identifier — userId for VERIFY (signed-in flow) or null for
+  /// pre-auth flows like password RESET where we look up by email.
+  userId    String?
+  /// Lowercased email used to send the OTP (always stored for audit + lookup).
+  email     String
+  codeHash  String
+  purpose   EmailOtpPurpose
+  attempts  Int             @default(0)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime        @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email, purpose, expiresAt])
+  @@index([userId, purpose])
 }

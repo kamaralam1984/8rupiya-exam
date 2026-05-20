@@ -56,6 +56,11 @@ export async function POST(req: Request) {
         create: { userId: user.id, testSetId, paymentId: payment.id },
         update: {},
       }),
+      // Auto-upgrade FREE → PREMIUM on first paid unlock. Leaves ADMIN/FAMILY untouched.
+      db.user.updateMany({
+        where: { id: user.id, role: "FREE" },
+        data: { role: "PREMIUM" },
+      }),
     ]);
 
     // referral first-purchase bonus

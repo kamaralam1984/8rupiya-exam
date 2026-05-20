@@ -147,7 +147,7 @@ export function TrackHome({
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{track.short}</p>
                 <h1 className="font-display text-3xl md:text-5xl font-bold tracking-tight">
-                  Hey {firstName}, <span className={cn("bg-clip-text text-transparent bg-gradient-to-br", track.gradient)}>{track.name}</span> mode on
+                  Hey {firstName}, <span className="text-brand-600">{track.name}</span> mode on
                 </h1>
               </div>
             </div>

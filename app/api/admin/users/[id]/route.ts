@@ -6,7 +6,7 @@ import { z } from "zod";
 export const dynamic = "force-dynamic";
 
 const patchSchema = z.object({
-  role: z.enum(["STUDENT", "ADMIN"]).optional(),
+  role: z.enum(["FREE", "PREMIUM", "FAMILY", "ADMIN"]).optional(),
   xpAdjust: z.number().int().min(-1000000).max(1000000).optional(),
   name: z.string().min(1).max(80).optional(),
   email: z.string().email().nullable().optional(),

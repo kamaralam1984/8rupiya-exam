@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X, LogIn, UserPlus, LayoutDashboard, User } from "lucide-react";
+import { Menu, X, LogIn, UserPlus, LayoutDashboard, User, BookOpenText, IndianRupee, Newspaper, Info } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -10,10 +10,10 @@ import { LangToggle } from "@/components/lang-toggle";
 import { useUser } from "@/lib/use-user";
 
 const NAV = [
-  { href: "/exams", label: "Exams" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/blog", label: "Blog" },
-  { href: "/about", label: "About" },
+  { href: "/exams",   label: "Exams",   icon: BookOpenText },
+  { href: "/pricing", label: "Pricing", icon: IndianRupee },
+  { href: "/blog",    label: "Blog",    icon: Newspaper },
+  { href: "/about",   label: "About",   icon: Info },
 ];
 
 export function Navbar() {
@@ -31,8 +31,9 @@ export function Navbar() {
               <Link
                 key={n.href}
                 href={n.href}
-                className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition"
               >
+                <n.icon className="h-4 w-4 text-accent/80" />
                 {n.label}
               </Link>
             ))}
@@ -64,8 +65,9 @@ export function Navbar() {
                     key={n.href}
                     href={n.href}
                     onClick={close}
-                    className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-muted"
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium hover:bg-muted"
                   >
+                    <n.icon className="h-4 w-4 text-accent/80" />
                     {n.label}
                   </Link>
                 ))}
@@ -99,7 +101,7 @@ export function Navbar() {
                     <Link
                       href="/signup"
                       onClick={close}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-brand-500 to-accent text-white hover:opacity-90"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-brand-600 text-white shadow-lg shadow-brand-500/20 hover:bg-brand-700"
                     >
                       <UserPlus className="h-4 w-4" /> Sign up — Start ₹8 Test
                     </Link>

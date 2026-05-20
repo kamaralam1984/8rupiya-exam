@@ -15,7 +15,8 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const user = await requireUser();
-    if (user.examTrack !== "class-10") {
+    // Admins always see the full library regardless of their examTrack.
+    if (user.role !== "ADMIN" && user.examTrack !== "class-10") {
       return fail("Library is available only for Class 10 students for now.", 403, "LIBRARY_RESTRICTED");
     }
 
@@ -28,7 +29,7 @@ export async function GET() {
         // Hide queued/failed ingests; show extracted or fully ingested books
         status: { in: ["EXTRACTED", "INGESTED"] },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
       take: 100,
       select: {
         id: true,
@@ -37,6 +38,7 @@ export async function GET() {
         fileSize: true,
         status: true,
         createdAt: true,
+        sortOrder: true,
         config: true,
       },
     });

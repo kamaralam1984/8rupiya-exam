@@ -8,8 +8,8 @@ export async function GET() {
   try {
     await requireAdmin();
     const pdfs = await db.pdf.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 50,
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+      take: 100,
       include: { exam: { select: { name: true, slug: true } }, _count: { select: { questions: true } } },
     });
     return ok(pdfs);

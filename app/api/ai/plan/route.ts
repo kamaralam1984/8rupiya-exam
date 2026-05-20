@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { ok, fail, handleError } from "@/lib/api";
-import { rateLimit } from "@/lib/ratelimit";
+import { rateLimitUser } from "@/lib/ratelimit";
 import { completeJson } from "@/lib/ai/llm";
 import { z } from "zod";
 
@@ -50,7 +50,7 @@ type PlanResp = {
 export async function POST(req: Request) {
   try {
     const user = await requireUser();
-    const rl = await rateLimit(`plan:${user.id}`, 6, 3600);
+    const rl = await rateLimitUser(user, "plan", 6, 3600);
     if (!rl.ok) return fail("Hourly limit reached", 429, "RATE_LIMITED");
     const body = schema.parse(await req.json());
     const exam = await db.exam.findUnique({

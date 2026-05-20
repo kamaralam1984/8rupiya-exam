@@ -1,3 +1,23 @@
+/**
+ * `icon` is a key understood by <ExamLogo /> — it maps to a Lucide icon.
+ * `color` is a Tailwind gradient string (from/to classes) used for the badge background.
+ * `logoUrl` (optional) lets admins ship a real PNG/SVG later via /public/exam-logos/;
+ *   when present, ExamLogo renders the <img> instead of the icon.
+ */
+export type ExamIconKey =
+  | "graduation"
+  | "briefcase"
+  | "train"
+  | "bank"
+  | "university"
+  | "school"
+  | "code"
+  | "shield"
+  | "pencil"
+  | "landmark"
+  | "stethoscope"
+  | "book";
+
 export type Exam = {
   slug: string;
   name: string;
@@ -7,9 +27,26 @@ export type Exam = {
   duration: string;
   questions: number;
   highlight?: boolean;
+  icon: ExamIconKey;
+  color: string; // e.g. "from-purple-500 to-fuchsia-500"
+  logoUrl?: string; // e.g. "/exam-logos/ctet.png"
 };
 
 export const EXAMS: Exam[] = [
+  {
+    slug: "neet",
+    name: "NEET",
+    short: "National Eligibility cum Entrance Test (UG)",
+    description:
+      "NEET UG prep with Physics, Chemistry and Biology mocks calibrated to NTA pattern — chapter-wise drills, full-length tests and AI-curated prediction sets.",
+    subjects: ["Physics", "Chemistry", "Biology"],
+    duration: "200 min",
+    questions: 180,
+    highlight: true,
+    icon: "stethoscope",
+    color: "from-emerald-500 to-lime-500",
+    logoUrl: "/exam-logos/neet.png",
+  },
   {
     slug: "ctet",
     name: "CTET",
@@ -20,6 +57,9 @@ export const EXAMS: Exam[] = [
     duration: "150 min",
     questions: 150,
     highlight: true,
+    icon: "graduation",
+    color: "from-purple-500 to-fuchsia-500",
+    logoUrl: "/exam-logos/ctet.png",
   },
   {
     slug: "ssc",
@@ -31,6 +71,9 @@ export const EXAMS: Exam[] = [
     duration: "60 min",
     questions: 100,
     highlight: true,
+    icon: "briefcase",
+    color: "from-blue-500 to-cyan-500",
+    logoUrl: "/exam-logos/ssc.png",
   },
   {
     slug: "railway",
@@ -41,6 +84,9 @@ export const EXAMS: Exam[] = [
     subjects: ["Maths", "Reasoning", "Science", "Current Affairs"],
     duration: "90 min",
     questions: 100,
+    icon: "train",
+    color: "from-amber-500 to-orange-500",
+    logoUrl: "/exam-logos/railway.png",
   },
   {
     slug: "banking",
@@ -51,6 +97,9 @@ export const EXAMS: Exam[] = [
     subjects: ["Quant", "Reasoning", "English", "Banking Awareness"],
     duration: "60 min",
     questions: 100,
+    icon: "bank",
+    color: "from-emerald-500 to-teal-500",
+    logoUrl: "/exam-logos/banking.png",
   },
   {
     slug: "cuet",
@@ -61,6 +110,9 @@ export const EXAMS: Exam[] = [
     subjects: ["General Test", "Domain Subjects", "Languages"],
     duration: "120 min",
     questions: 60,
+    icon: "university",
+    color: "from-indigo-500 to-violet-500",
+    logoUrl: "/exam-logos/cuet.png",
   },
   {
     slug: "class-10",
@@ -71,6 +123,9 @@ export const EXAMS: Exam[] = [
     subjects: ["Science", "Maths", "Social Science", "English", "Hindi"],
     duration: "60 min",
     questions: 40,
+    icon: "school",
+    color: "from-sky-500 to-blue-500",
+    logoUrl: "/exam-logos/class-10.png",
   },
   {
     slug: "niit",
@@ -81,6 +136,9 @@ export const EXAMS: Exam[] = [
     subjects: ["Logical Reasoning", "English", "Computer Basics"],
     duration: "60 min",
     questions: 60,
+    icon: "code",
+    color: "from-slate-500 to-zinc-500",
+    logoUrl: "/exam-logos/niit.png",
   },
   {
     slug: "police",
@@ -91,6 +149,9 @@ export const EXAMS: Exam[] = [
     subjects: ["Reasoning", "GK", "Maths", "Hindi/English"],
     duration: "90 min",
     questions: 100,
+    icon: "shield",
+    color: "from-red-500 to-rose-500",
+    logoUrl: "/exam-logos/police.png",
   },
   {
     slug: "teacher",
@@ -101,6 +162,9 @@ export const EXAMS: Exam[] = [
     subjects: ["Pedagogy", "Child Psychology", "Subjects", "Languages"],
     duration: "150 min",
     questions: 150,
+    icon: "pencil",
+    color: "from-pink-500 to-rose-500",
+    logoUrl: "/exam-logos/teacher.png",
   },
   {
     slug: "state",
@@ -111,6 +175,9 @@ export const EXAMS: Exam[] = [
     subjects: ["State GK", "History", "Geography", "Polity", "Current Affairs"],
     duration: "120 min",
     questions: 150,
+    icon: "landmark",
+    color: "from-yellow-500 to-amber-500",
+    logoUrl: "/exam-logos/state.png",
   },
 ];
 

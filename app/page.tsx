@@ -2,6 +2,10 @@ import { redirect } from "next/navigation";
 import { Hero } from "@/components/hero";
 import { ExamGrid } from "@/components/exam-grid";
 import { FeaturesSection } from "@/components/features-section";
+import { TrustStrip } from "@/components/trust-strip";
+import { HowItWorks } from "@/components/how-it-works";
+import { Testimonials } from "@/components/testimonials";
+import { SubjectRow } from "@/components/subject-row";
 import { SITE } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -67,8 +71,12 @@ export default async function Home() {
   return (
     <>
       <Hero />
+      <TrustStrip />
       <ExamGrid />
+      <HowItWorks />
+      <SubjectRow />
       <FeaturesSection />
+      <Testimonials />
 
       {/* What is 8Rupia — branded, SEO + AdSense friendly long-form section */}
       <section id="about-8rupia" className="container py-16 md:py-20 max-w-4xl">

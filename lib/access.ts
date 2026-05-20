@@ -41,14 +41,32 @@ export async function setDefaultPlanKind(plan: PlanKind) {
   });
 }
 
-/** Active subscription = active flag true AND endsAt in future. */
+/** Active subscription = active flag true AND endsAt in future. ADMIN/PREMIUM/FAMILY roles bypass. */
 export async function hasPaidAccess(userId: string): Promise<boolean> {
+  const user = await db.user.findUnique({ where: { id: userId }, select: { role: true } });
+  if (user && (user.role === "ADMIN" || user.role === "PREMIUM" || user.role === "FAMILY")) {
+    return true;
+  }
   const sub = await db.subscription.findFirst({
     where: { userId, active: true, endsAt: { gt: new Date() } },
     orderBy: { endsAt: "desc" },
     select: { id: true },
   });
   return !!sub;
+}
+
+/** Lightweight role lookup so route gates can short-circuit for admins. */
+export async function isAdminUser(userId: string | null | undefined): Promise<boolean> {
+  if (!userId) return false;
+  const u = await db.user.findUnique({ where: { id: userId }, select: { role: true } });
+  return u?.role === "ADMIN";
+}
+
+/** True if user role grants unlimited access (PREMIUM, FAMILY, or ADMIN). */
+export async function isPaidRoleUser(userId: string | null | undefined): Promise<boolean> {
+  if (!userId) return false;
+  const u = await db.user.findUnique({ where: { id: userId }, select: { role: true } });
+  return u?.role === "ADMIN" || u?.role === "PREMIUM" || u?.role === "FAMILY";
 }
 
 export async function activeSubscription(userId: string) {
@@ -74,6 +92,12 @@ export async function grantSubscription(opts: {
     data: { active: false },
   });
 
+  // Auto-upgrade FREE → PREMIUM. Don't touch ADMIN or FAMILY (admin-managed).
+  await db.user.updateMany({
+    where: { id: opts.userId, role: "FREE" },
+    data: { role: "PREMIUM" },
+  });
+
   return db.subscription.create({
     data: { userId: opts.userId, plan, startsAt, endsAt, active: true },
   });
@@ -88,8 +112,9 @@ export async function revokeSubscription(userId: string) {
 
 export type FeatureGate = "ok" | "disabled" | "paywall";
 
-/** What the user can do with this feature. */
+/** What the user can do with this feature. ADMIN/PREMIUM/FAMILY roles always see "ok". */
 export async function checkFeatureAccess(key: string, userId: string | null): Promise<FeatureGate> {
+  if (userId && (await isPaidRoleUser(userId))) return "ok";
   const flag = await getFlag(key);
   // Missing flag = treat as enabled+free (graceful default)
   if (!flag) return "ok";

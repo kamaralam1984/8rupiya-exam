@@ -10,7 +10,7 @@ const createSchema = z.object({
   phone: z.string().min(8).max(20).optional(),
   name: z.string().min(1).max(80).optional(),
   password: z.string().min(8).max(120),
-  role: z.enum(["STUDENT", "ADMIN"]).default("STUDENT"),
+  role: z.enum(["FREE", "PREMIUM", "FAMILY", "ADMIN"]).default("FREE"),
   language: z.enum(["en", "hi"]).default("en"),
 }).refine((b) => !!(b.email || b.phone), { message: "email or phone required" });
 

@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2, BookOpen, FileText, ArrowRight } from "lucide-react";
 import { api } from "@/lib/api-client";
+import { getExam } from "@/lib/exams";
+import { ExamLogo } from "@/components/exam-logo";
 
 type Book = {
   id: string;
@@ -64,7 +66,11 @@ export function LibraryClient() {
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {books.map((b) => (
+          {books.map((b) => {
+            // Library is currently scoped to class-10; render the parent exam's
+            // logo so every card carries the course identity (NEET-style branding).
+            const exam = getExam("class-10");
+            return (
             <Link
               key={b.id}
               href={`/library/${b.id}`}
@@ -72,9 +78,13 @@ export function LibraryClient() {
             >
               <div className="h-full glass rounded-2xl p-5 gradient-border hover:-translate-y-0.5 transition">
                 <div className="flex items-center gap-3">
-                  <span className="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-brand-500/20 to-accent/20">
-                    <BookOpen className="h-5 w-5 text-brand-600 dark:text-brand-400" />
-                  </span>
+                  <ExamLogo
+                    icon={exam?.icon}
+                    color={exam?.color}
+                    logoUrl={exam?.logoUrl}
+                    alt={`${exam?.name ?? "Course"} logo`}
+                    size="md"
+                  />
                   <div className="min-w-0">
                     <p className="font-display font-semibold text-base truncate" title={b.title}>{b.title}</p>
                     <p className="text-xs text-muted-foreground truncate">
@@ -93,7 +103,8 @@ export function LibraryClient() {
                 </p>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       )}
     </section>

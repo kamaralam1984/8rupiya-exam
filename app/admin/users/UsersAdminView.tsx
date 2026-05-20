@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Loader2, Search, Shield, ShieldOff, Trash2, Edit, KeyRound, Plus, X, Save, Eye, EyeOff, Crown, CalendarOff,
+  Loader2, Search, Trash2, Edit, KeyRound, Plus, X, Save, Eye, EyeOff, Crown, CalendarOff,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,12 +11,22 @@ import { useToast } from "@/components/ui/toaster";
 
 type Sub = { id: string; plan: string; startsAt: string; endsAt: string } | null;
 
+type Role = "FREE" | "PREMIUM" | "FAMILY" | "ADMIN";
+const ROLES: Role[] = ["FREE", "PREMIUM", "FAMILY", "ADMIN"];
+
+const ROLE_BADGE: Record<Role, string> = {
+  FREE: "bg-muted text-muted-foreground",
+  PREMIUM: "bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/30",
+  FAMILY: "bg-fuchsia-500/20 text-fuchsia-300 ring-1 ring-fuchsia-500/30",
+  ADMIN: "bg-brand-500/20 text-brand-500 ring-1 ring-brand-500/30",
+};
+
 type U = {
   id: string;
   email: string | null;
   phone: string | null;
   name: string | null;
-  role: "STUDENT" | "ADMIN";
+  role: Role;
   xp: number;
   streak: number;
   createdAt: string;
@@ -41,7 +51,7 @@ export function UsersAdminView() {
   }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
 
-  async function setRole(u: U, role: "STUDENT" | "ADMIN") {
+  async function setRole(u: U, role: Role) {
     const r = await api(`/api/admin/users/${u.id}`, { method: "PATCH", body: JSON.stringify({ role }) });
     if (r.ok) { toast(`Set ${u.email ?? u.id} → ${role}`, "success"); load(); }
     else toast(r.error.message ?? "Failed", "error");
@@ -93,7 +103,7 @@ export function UsersAdminView() {
                     {u.examTrack ? ` · track=${u.examTrack}` : ""}
                   </p>
                 </div>
-                <span className={`text-[11px] px-2 py-0.5 rounded ${u.role === "ADMIN" ? "bg-brand-500/20 text-brand-500" : "bg-muted text-muted-foreground"}`}>
+                <span className={`text-[11px] px-2 py-0.5 rounded ${ROLE_BADGE[u.role] ?? "bg-muted text-muted-foreground"}`}>
                   {u.role}
                 </span>
                 {u.subscription && (
@@ -104,21 +114,22 @@ export function UsersAdminView() {
                     <Crown className="h-3 w-3" /> {u.subscription.plan}
                   </span>
                 )}
+                <select
+                  value={u.role}
+                  onChange={(e) => setRole(u, e.target.value as Role)}
+                  title="Change role"
+                  className="text-xs bg-background border border-border rounded-md px-2 py-1"
+                >
+                  {ROLES.map((r) => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
                 <Button size="sm" variant="ghost" title="Edit" onClick={() => setEditingId(editingId === u.id ? null : u.id)}>
                   <Edit className="h-3.5 w-3.5" />
                 </Button>
                 <Button size="sm" variant="ghost" title="Reset password" onClick={() => setResetForId(resetForId === u.id ? null : u.id)}>
                   <KeyRound className="h-3.5 w-3.5" />
                 </Button>
-                {u.role === "ADMIN" ? (
-                  <Button size="sm" variant="outline" onClick={() => setRole(u, "STUDENT")}>
-                    <ShieldOff className="h-3.5 w-3.5" /> Demote
-                  </Button>
-                ) : (
-                  <Button size="sm" onClick={() => setRole(u, "ADMIN")}>
-                    <Shield className="h-3.5 w-3.5" /> Promote
-                  </Button>
-                )}
                 <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" title="Delete" onClick={() => remove(u)}>
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
@@ -144,7 +155,7 @@ function CreateUserCard({ onDone }: { onDone: (ok: boolean) => void }) {
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"STUDENT" | "ADMIN">("STUDENT");
+  const [role, setRole] = useState<Role>("FREE");
   const [busy, setBusy] = useState(false);
   const toast = useToast();
 
@@ -194,9 +205,10 @@ function CreateUserCard({ onDone }: { onDone: (ok: boolean) => void }) {
       </label>
       <label className="block">
         <span className="text-xs text-muted-foreground">Role</span>
-        <select value={role} onChange={(e) => setRole(e.target.value as any)} className="mt-1 w-full bg-background border border-border rounded-md px-3 py-2 text-sm">
-          <option value="STUDENT">STUDENT</option>
-          <option value="ADMIN">ADMIN</option>
+        <select value={role} onChange={(e) => setRole(e.target.value as Role)} className="mt-1 w-full bg-background border border-border rounded-md px-3 py-2 text-sm">
+          {ROLES.map((r) => (
+            <option key={r} value={r}>{r}</option>
+          ))}
         </select>
       </label>
       <div className="sm:col-span-2 flex justify-end">

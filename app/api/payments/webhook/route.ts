@@ -30,6 +30,11 @@ export async function POST(req: Request) {
                 update: {},
               })]
             : []),
+          // Any successful Razorpay payment auto-upgrades a FREE user to PREMIUM.
+          db.user.updateMany({
+            where: { id: payment.userId, role: "FREE" },
+            data: { role: "PREMIUM" },
+          }),
         ]);
       }
     }

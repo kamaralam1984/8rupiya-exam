@@ -5,7 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
-import { ParticleBackground } from "@/components/particle-background";
+import { NotebookBackground } from "@/components/notebook-background";
 import { RegisterSW } from "@/components/register-sw";
 import { ToastProvider } from "@/components/ui/toaster";
 import { InstallPrompt } from "@/components/install-prompt";
@@ -16,8 +16,8 @@ const display = Space_Grotesk({ subsets: ["latin"], variable: "--font-display", 
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0f1e" },
+    { media: "(prefers-color-scheme: light)", color: "#fdfaf3" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d0f1f" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -80,9 +80,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={lang} suppressHydrationWarning className={`${inter.variable} ${display.variable}`}>
       <body>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <ToastProvider>
-            <ParticleBackground />
+            <NotebookBackground />
             <Navbar />
             <main>{children}</main>
             <Footer />

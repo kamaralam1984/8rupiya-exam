@@ -25,3 +25,19 @@ export function clientKey(headers: Headers, userId?: string | null) {
   const ip = fwd?.split(",")[0]?.trim() || headers.get("x-real-ip") || "anon";
   return `ip:${ip}`;
 }
+
+/**
+ * Per-user rate limit that automatically bypasses for paid roles (ADMIN, PREMIUM, FAMILY).
+ * Pass any object with `{ id, role }` — typically the result of `requireUser()`.
+ */
+export async function rateLimitUser(
+  user: { id: string; role: "FREE" | "PREMIUM" | "FAMILY" | "ADMIN" },
+  key: string,
+  limit: number,
+  windowSec: number,
+) {
+  if (user.role === "ADMIN" || user.role === "PREMIUM" || user.role === "FAMILY") {
+    return { ok: true, remaining: Number.POSITIVE_INFINITY, resetIn: 0 };
+  }
+  return rateLimit(`${key}:${user.id}`, limit, windowSec);
+}

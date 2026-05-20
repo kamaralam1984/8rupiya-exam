@@ -15,9 +15,18 @@ function secret() {
   return new TextEncoder().encode(s);
 }
 
+export type UserRole = "FREE" | "PREMIUM" | "FAMILY" | "ADMIN";
+
+/** Roles considered "paid" — share the same access surface as ADMIN for paywalls / rate limits. */
+export const PAID_ROLES: UserRole[] = ["PREMIUM", "FAMILY", "ADMIN"];
+
+export function isPaidRole(role: UserRole): boolean {
+  return role === "PREMIUM" || role === "FAMILY" || role === "ADMIN";
+}
+
 export type SessionPayload = {
   sub: string;
-  role: "STUDENT" | "ADMIN";
+  role: UserRole;
 };
 
 export async function hashPassword(plain: string) {
@@ -39,7 +48,7 @@ export async function signSession(payload: SessionPayload, ttlSec = 60 * 60 * 24
 export async function verifySession(token: string): Promise<SessionPayload | null> {
   try {
     const { payload } = await jwtVerify(token, secret());
-    return { sub: payload.sub as string, role: payload.role as SessionPayload["role"] };
+    return { sub: payload.sub as string, role: payload.role as UserRole };
   } catch {
     return null;
   }

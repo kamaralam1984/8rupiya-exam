@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SITE } from "@/lib/utils";
 import { Logo } from "@/components/logo";
+import { Heart, BookOpenText } from "lucide-react";
 
 const COLS = [
   {
@@ -30,13 +31,18 @@ const COLS = [
 
 export function Footer() {
   return (
-    <footer className="mt-24 border-t border-border/40 bg-background/50 backdrop-blur">
+    <footer className="mt-24 border-t border-border/40 bg-background/60 backdrop-blur">
       <div className="container py-12 grid gap-10 md:grid-cols-4">
         <div>
           <Logo size="md" />
           <p className="mt-3 text-sm text-muted-foreground max-w-xs">
-            AI-powered exam preparation for Indian students. Unlock premium mock tests for just ₹8.
+            Bharat ke students ke liye AI-powered exam prep. Premium mock tests sirf ₹8 mein —
+            chai se sasta, coaching se behtar.
           </p>
+          <div className="mt-4 inline-flex items-center gap-2 rounded-full glass px-3 py-1.5 text-[11px] font-medium">
+            <BookOpenText className="h-3.5 w-3.5 text-accent" />
+            Built for every padhakku
+          </div>
         </div>
         {COLS.map((c) => (
           <div key={c.title}>
@@ -56,7 +62,9 @@ export function Footer() {
       <div className="border-t border-border/40">
         <div className="container py-5 flex flex-col sm:flex-row justify-between gap-2 text-xs text-muted-foreground">
           <p>© {new Date().getFullYear()} {SITE.name}. All rights reserved.</p>
-          <p>Made in India · {SITE.domain}</p>
+          <p className="inline-flex items-center gap-1">
+            Made with <Heart className="inline h-3 w-3 text-accent fill-accent" /> in India · {SITE.domain}
+          </p>
         </div>
       </div>
     </footer>

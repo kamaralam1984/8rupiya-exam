@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { weaknessSchema } from "@/lib/validators";
 import { ok, fail, handleError } from "@/lib/api";
-import { rateLimit } from "@/lib/ratelimit";
+import { rateLimitUser } from "@/lib/ratelimit";
 import { completeJson } from "@/lib/ai/llm";
 import { weaknessSystem, weaknessUser } from "@/lib/ai/prompts";
 
@@ -22,7 +22,7 @@ type Report = {
 export async function POST(req: Request) {
   try {
     const user = await requireUser();
-    const rl = await rateLimit(`weak:${user.id}`, 20, 3600);
+    const rl = await rateLimitUser(user, "weak", 20, 3600);
     if (!rl.ok) return fail("Limit reached", 429, "RATE_LIMITED");
 
     const body = weaknessSchema.parse(await req.json());

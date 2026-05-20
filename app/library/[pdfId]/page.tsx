@@ -19,7 +19,8 @@ export default async function ReaderPage({ params }: { params: Promise<{ pdfId: 
     if (e instanceof AuthError) redirect("/signin?next=/library");
     throw e;
   }
-  if (user.examTrack !== "class-10") redirect("/library");
+  const isAdmin = user.role === "ADMIN";
+  if (!isAdmin && user.examTrack !== "class-10") redirect("/library");
 
   const { pdfId } = await params;
   const pdf = await db.pdf.findUnique({
@@ -33,7 +34,8 @@ export default async function ReaderPage({ params }: { params: Promise<{ pdfId: 
       exam: { select: { slug: true, name: true } },
     },
   });
-  if (!pdf || pdf.exam?.slug !== "class-10") notFound();
+  if (!pdf) notFound();
+  if (!isAdmin && pdf.exam?.slug !== "class-10") notFound();
 
   const title = (pdf.config as any)?.title ?? pdf.filename.replace(/\.pdf$/i, "");
   const subjectSlug = (pdf.config as any)?.subjectSlug ?? null;
@@ -45,7 +47,7 @@ export default async function ReaderPage({ params }: { params: Promise<{ pdfId: 
       filename={pdf.filename}
       pageCount={pdf.pageCount}
       subjectSlug={subjectSlug}
-      examName={pdf.exam.name}
+      examName={pdf.exam?.name ?? "Uncategorized"}
     />
   );
 }

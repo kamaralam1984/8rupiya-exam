@@ -1,6 +1,6 @@
 import { requireUser } from "@/lib/auth";
 import { ok, fail, handleError } from "@/lib/api";
-import { rateLimit } from "@/lib/ratelimit";
+import { rateLimitUser } from "@/lib/ratelimit";
 import { completeJson } from "@/lib/ai/llm";
 import { z } from "zod";
 
@@ -27,7 +27,7 @@ type Resp = { topic: string; cards: { front: string; back: string }[] };
 export async function POST(req: Request) {
   try {
     const user = await requireUser();
-    const rl = await rateLimit(`flash:${user.id}`, 20, 3600);
+    const rl = await rateLimitUser(user, "flash", 20, 3600);
     if (!rl.ok) return fail("Hourly limit reached", 429, "RATE_LIMITED");
     const body = schema.parse(await req.json());
 

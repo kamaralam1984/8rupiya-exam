@@ -19,8 +19,8 @@ export default async function LibraryPage() {
     if (e instanceof AuthError) redirect("/signin?next=/library");
     throw e;
   }
-  if (!user.examTrack) redirect("/onboarding");
-  if (user.examTrack !== "class-10") {
+  if (!user.examTrack && user.role !== "ADMIN") redirect("/onboarding");
+  if (user.role !== "ADMIN" && user.examTrack !== "class-10") {
     return (
       <section className="container py-16 max-w-md">
         <div className="glass rounded-2xl p-7 gradient-border">

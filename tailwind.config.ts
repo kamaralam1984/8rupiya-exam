@@ -29,14 +29,39 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Brand: deep indigo "study blue" — feels scholarly + Indian-modern
         brand: {
-          50: "#eef4ff",
-          100: "#dbe6ff",
-          400: "#7aa2ff",
-          500: "#4f7cff",
-          600: "#2f5ee6",
-          700: "#1f48b8",
-          900: "#0e1f5c",
+          50: "#eef2ff",
+          100: "#e0e7ff",
+          200: "#c7d2fe",
+          400: "#818cf8",
+          500: "#6366f1",
+          600: "#4f46e5",
+          700: "#4338ca",
+          800: "#3730a3",
+          900: "#1e1b4b",
+        },
+        // Saffron / warm secondary — knowledge, energy, Indian palette
+        saffron: {
+          50: "#fff7ed",
+          100: "#ffedd5",
+          300: "#fdba74",
+          400: "#fb923c",
+          500: "#f97316",
+          600: "#ea580c",
+          700: "#c2410c",
+        },
+        // Cream / parchment — soft page background tone
+        cream: {
+          50: "#fdfaf3",
+          100: "#fbf5e6",
+          200: "#f5ead0",
+        },
+        // Ink — for serious text accents
+        ink: {
+          700: "#27272a",
+          800: "#18181b",
+          900: "#0f0f12",
         },
       },
       borderRadius: {
@@ -50,7 +75,16 @@ const config: Config = {
       },
       backgroundImage: {
         "grid-fade":
-          "radial-gradient(circle at center, rgba(79,124,255,0.15), transparent 60%)",
+          "radial-gradient(circle at center, rgba(99,102,241,0.18), transparent 60%)",
+        // Ruled-paper notebook lines for the global page background
+        "notebook-lines":
+          "repeating-linear-gradient(to bottom, transparent 0 31px, hsl(var(--border) / 0.35) 31px 32px)",
+        // Subtle dot-grid for accent panels
+        "dot-grid":
+          "radial-gradient(hsl(var(--border) / 0.6) 1px, transparent 1px)",
+      },
+      backgroundSize: {
+        "dot-grid": "20px 20px",
       },
       keyframes: {
         float: {
@@ -61,10 +95,20 @@ const config: Config = {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
+        "draw-underline": {
+          "0%": { transform: "scaleX(0)" },
+          "100%": { transform: "scaleX(1)" },
+        },
       },
       animation: {
         float: "float 6s ease-in-out infinite",
         shimmer: "shimmer 3s linear infinite",
+        "draw-underline": "draw-underline 0.6s ease-out forwards",
+      },
+      boxShadow: {
+        // Soft warm shadow for cards — feels like paper on a desk
+        paper: "0 1px 0 0 hsl(var(--border)), 0 8px 24px -12px hsl(220 40% 8% / 0.3)",
+        warm: "0 10px 30px -10px rgba(249, 115, 22, 0.25)",
       },
     },
   },

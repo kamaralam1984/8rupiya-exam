@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, MailCheck, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api-client";
@@ -79,9 +79,44 @@ export function SettingsView() {
           {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</> : <><Save className="h-4 w-4" /> Save</>}
         </Button>
       </div>
-      <div className="mt-6 glass rounded-2xl p-6 gradient-border">
+      {user.email && (
+        <div className="mt-6 paper-card p-6">
+          <div className="flex items-center gap-2">
+            {user.emailVerifiedAt ? (
+              <>
+                <span className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-500/15 text-emerald-600">
+                  <MailCheck className="h-4 w-4" />
+                </span>
+                <div>
+                  <h2 className="font-display font-semibold">Email verified</h2>
+                  <p className="text-xs text-muted-foreground">
+                    {user.email} confirm ho chuka hai ✓
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <span className="grid h-8 w-8 place-items-center rounded-lg bg-amber-500/15 text-amber-600">
+                  <ShieldAlert className="h-4 w-4" />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <h2 className="font-display font-semibold">Email verify nahin hua</h2>
+                  <p className="text-xs text-muted-foreground">
+                    Apna account secure karne ke liye {user.email} verify karein.
+                  </p>
+                </div>
+                <Link href="/verify-email">
+                  <Button size="sm">Verify now</Button>
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="mt-6 paper-card p-6">
         <h2 className="font-display font-semibold mb-2">Security</h2>
-        <Link href="/forgot-password" className="text-sm text-brand-500 hover:underline">
+        <Link href="/forgot-password" className="text-sm text-brand-600 hover:underline">
           Change password
         </Link>
       </div>

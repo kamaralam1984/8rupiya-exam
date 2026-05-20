@@ -3,6 +3,7 @@ import { hashPassword, signSession, setSessionCookie } from "@/lib/auth";
 import { registerSchema } from "@/lib/validators";
 import { ok, fail, handleError } from "@/lib/api";
 import { rateLimit, clientKey } from "@/lib/ratelimit";
+import { issueOtp } from "@/lib/otp";
 
 export const dynamic = "force-dynamic";
 
@@ -33,9 +34,22 @@ export async function POST(req: Request) {
       },
     });
 
+    // Auto-send a verification OTP for email signups.
+    if (user.email) {
+      issueOtp({ email: user.email, purpose: "VERIFY", userId: user.id }).catch((e) =>
+        console.warn("[register] OTP send failed:", e?.message),
+      );
+    }
+
     const token = await signSession({ sub: user.id, role: user.role });
     await setSessionCookie(token);
-    return ok({ id: user.id, email: user.email, phone: user.phone, name: user.name });
+    return ok({
+      id: user.id,
+      email: user.email,
+      phone: user.phone,
+      name: user.name,
+      requiresEmailVerification: !!user.email,
+    });
   } catch (e) {
     return handleError(e);
   }

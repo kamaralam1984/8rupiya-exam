@@ -7,6 +7,7 @@ import { requireAdmin } from "@/lib/auth";
 import { pdfIngestConfigSchema } from "@/lib/validators";
 import { ok, fail, handleError } from "@/lib/api";
 import { getQueue, QUEUE_NAMES, defaultJobOpts } from "@/lib/queue";
+import { compressPdf } from "@/lib/pdf-compress";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -59,7 +60,24 @@ export async function POST(req: NextRequest) {
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80);
     const storagePath = path.join(dir, `${id}__${safeName}`);
     const buf = Buffer.from(await file.arrayBuffer());
+    const originalSize = buf.byteLength;
     await fs.writeFile(storagePath, buf);
+
+    // Lossless-feel compression via Ghostscript /printer preset (300dpi).
+    // Falls back to the original file if compression doesn't help or fails.
+    const compressionReport = await compressPdf(storagePath).catch((e) => {
+      console.warn("[pdfs/upload] compressPdf threw, keeping original:", e?.message);
+      return null;
+    });
+
+    const finalSize = compressionReport?.compressedSize ?? originalSize;
+    if (compressionReport?.compressed) {
+      console.log(
+        `[pdfs/upload] compressed ${file.name}: ${(originalSize / 1024 / 1024).toFixed(2)} MB → ${(finalSize / 1024 / 1024).toFixed(2)} MB (-${compressionReport.savedPct}%, preset=${compressionReport.preset})`,
+      );
+    } else if (compressionReport?.error) {
+      console.warn(`[pdfs/upload] compression skipped: ${compressionReport.error}`);
+    }
 
     const pdf = await db.pdf.create({
       data: {
@@ -67,8 +85,21 @@ export async function POST(req: NextRequest) {
         uploadedBy: admin.id,
         filename: file.name,
         storagePath,
-        fileSize: buf.byteLength,
-        config: config as unknown as object,
+        fileSize: finalSize,
+        config: {
+          ...(config as Record<string, unknown>),
+          compression: compressionReport
+            ? {
+                preset: compressionReport.preset,
+                originalSize: compressionReport.originalSize,
+                compressedSize: compressionReport.compressedSize,
+                savedBytes: compressionReport.savedBytes,
+                savedPct: compressionReport.savedPct,
+                compressed: compressionReport.compressed,
+                ...(compressionReport.error ? { error: compressionReport.error } : {}),
+              }
+            : { compressed: false, reason: "compressor unavailable" },
+        } as unknown as object,
         status: "QUEUED",
       },
     });
@@ -89,7 +120,14 @@ export async function POST(req: NextRequest) {
       defaultJobOpts
     );
 
-    return ok({ pdfId: pdf.id, jobId: job.id, size: buf.byteLength });
+    return ok({
+      pdfId: pdf.id,
+      jobId: job.id,
+      size: finalSize,
+      originalSize,
+      compressed: compressionReport?.compressed ?? false,
+      savedPct: compressionReport?.savedPct ?? 0,
+    });
   } catch (e) {
     return handleError(e);
   }

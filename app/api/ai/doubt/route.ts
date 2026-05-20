@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { doubtSchema } from "@/lib/validators";
 import { ok, fail, handleError } from "@/lib/api";
-import { rateLimit } from "@/lib/ratelimit";
+import { rateLimitUser } from "@/lib/ratelimit";
 import { completeJson } from "@/lib/ai/llm";
 import { doubtSystem, doubtUser } from "@/lib/ai/prompts";
 import { checkFeatureAccess } from "@/lib/access";
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     if (gate === "disabled") return fail("This feature is disabled.", 403, "FEATURE_DISABLED");
     if (gate === "paywall") return fail("Upgrade to unlock AI Doubt Solver.", 402, "PAYMENT_REQUIRED");
 
-    const rl = await rateLimit(`doubt:${user.id}`, 30, 3600);
+    const rl = await rateLimitUser(user, "doubt", 30, 3600);
     if (!rl.ok) return fail("Hourly doubt limit reached", 429, "RATE_LIMITED");
 
     const body = doubtSchema.parse(await req.json());

@@ -24,6 +24,7 @@ export async function GET() {
       language: user.language,
       examTrack: user.examTrack ?? null,
       onboardedAt: user.onboardedAt ? user.onboardedAt.toISOString() : null,
+      emailVerifiedAt: user.emailVerifiedAt ? user.emailVerifiedAt.toISOString() : null,
     });
   } catch (e) {
     return handleError(e);

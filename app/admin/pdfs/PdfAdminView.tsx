@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Loader2, FileText, Sparkles, BookOpen, ListChecks, X, Plus, Archive } from "lucide-react";
+import { Loader2, FileText, Sparkles, BookOpen, ListChecks, X, Plus, Archive, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api-client";
 import { EXAMS } from "@/lib/exams";
+import { useToast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 
 type Mode = "book" | "questions" | "pyq";
@@ -44,6 +45,9 @@ function humanSize(bytes: number | null) {
 
 export function PdfAdminView() {
   const [pdfs, setPdfs] = useState<Pdf[] | null>(null);
+  const [reordering, setReordering] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const toast = useToast();
   const [mode, setMode] = useState<Mode>("book");
   const [examSlug, setExamSlug] = useState("");
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -492,23 +496,56 @@ export function PdfAdminView() {
       </form>
 
       <div className="mt-8">
-        <h2 className="font-display text-lg font-semibold mb-3">Recent uploads</h2>
+        <h2 className="font-display text-lg font-semibold mb-3">Uploaded PDFs</h2>
+        <p className="text-xs text-muted-foreground mb-3">
+          Use ↑ / ↓ to set the order they appear on /library and other public pages.
+        </p>
         {!pdfs ? (
           <Loader2 className="h-5 w-5 animate-spin text-brand-500" />
         ) : pdfs.length === 0 ? (
           <p className="text-sm text-muted-foreground">No PDFs yet.</p>
         ) : (
           <div className="space-y-2">
-            {pdfs.map((p) => (
+            {pdfs.map((p, idx) => (
               <div key={p.id} className="glass rounded-xl p-3 flex items-center gap-3">
-                <FileText className="h-4 w-4 text-muted-foreground" />
+                <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{p.filename}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {p.exam?.name ?? "Uncategorized"} · {p.status} · {p._count.questions} questions · {humanSize(p.fileSize)}
+                  <p className="text-xs text-muted-foreground truncate">
+                    {p.exam?.name ?? "Uncategorized"} · {p.status} · {p._count.questions} Q · {humanSize(p.fileSize)} · {new Date(p.createdAt).toLocaleDateString()}
                   </p>
                 </div>
-                <span className="text-xs text-muted-foreground">{new Date(p.createdAt).toLocaleDateString()}</span>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => move(idx, -1)}
+                    disabled={reordering || idx === 0}
+                    aria-label="Move up"
+                    className="h-8 w-8 grid place-items-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <ArrowUp className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => move(idx, 1)}
+                    disabled={reordering || idx === (pdfs.length - 1)}
+                    aria-label="Move down"
+                    className="h-8 w-8 grid place-items-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <ArrowDown className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removePdf(p)}
+                    disabled={deletingId === p.id}
+                    aria-label="Delete"
+                    className="h-8 w-8 grid place-items-center rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-500/10 disabled:opacity-50"
+                  >
+                    {deletingId === p.id
+                      ? <Loader2 className="h-4 w-4 animate-spin" />
+                      : <Trash2 className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -516,6 +553,39 @@ export function PdfAdminView() {
       </div>
     </section>
   );
+
+  async function move(idx: number, delta: -1 | 1) {
+    if (!pdfs) return;
+    const target = idx + delta;
+    if (target < 0 || target >= pdfs.length) return;
+    const next = pdfs.slice();
+    const [item] = next.splice(idx, 1);
+    next.splice(target, 0, item);
+    setPdfs(next); // optimistic
+    setReordering(true);
+    const r = await api("/api/admin/pdfs/reorder", {
+      method: "PATCH",
+      body: JSON.stringify({ ids: next.map((p) => p.id) }),
+    });
+    setReordering(false);
+    if (!r.ok) {
+      toast(r.error.message ?? "Reorder failed", "error");
+      refresh();
+    }
+  }
+
+  async function removePdf(p: Pdf) {
+    if (!confirm(`Delete "${p.filename}"? This removes the file and its generated questions.`)) return;
+    setDeletingId(p.id);
+    const r = await api(`/api/admin/pdfs/${p.id}`, { method: "DELETE" });
+    setDeletingId(null);
+    if (r.ok) {
+      toast("PDF deleted", "success");
+      setPdfs((prev) => prev ? prev.filter((x) => x.id !== p.id) : prev);
+    } else {
+      toast(r.error.message ?? "Delete failed", "error");
+    }
+  }
 }
 
 function ModeCard({

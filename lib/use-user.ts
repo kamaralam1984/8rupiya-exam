@@ -7,12 +7,13 @@ export type Me = {
   email: string | null;
   phone: string | null;
   name: string | null;
-  role: "STUDENT" | "ADMIN";
+  role: "FREE" | "PREMIUM" | "FAMILY" | "ADMIN";
   xp: number;
   streak: number;
   language: string;
   examTrack: string | null;
   onboardedAt: string | null;
+  emailVerifiedAt?: string | null;
 };
 
 export function useUser() {

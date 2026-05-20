@@ -18,7 +18,8 @@ export const runtime = "nodejs";
 export async function GET(req: Request, ctx: { params: Promise<{ pdfId: string }> }) {
   try {
     const user = await requireUser();
-    if (user.examTrack !== "class-10") return fail("Forbidden", 403, "LIBRARY_RESTRICTED");
+    const isAdmin = user.role === "ADMIN";
+    if (!isAdmin && user.examTrack !== "class-10") return fail("Forbidden", 403, "LIBRARY_RESTRICTED");
 
     const { pdfId } = await ctx.params;
     const pdf = await db.pdf.findUnique({
@@ -26,7 +27,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ pdfId: string }
       select: { storagePath: true, filename: true, exam: { select: { slug: true } } },
     });
     if (!pdf) return fail("Book not found", 404, "NOT_FOUND");
-    if (pdf.exam?.slug !== "class-10") return fail("Book not part of your library", 403, "WRONG_TRACK");
+    if (!isAdmin && pdf.exam?.slug !== "class-10") return fail("Book not part of your library", 403, "WRONG_TRACK");
 
     const safePath = path.resolve(pdf.storagePath);
     if (!fs.existsSync(safePath)) return fail("File missing on disk", 410, "FILE_MISSING");

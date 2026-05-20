@@ -30,7 +30,8 @@ export async function POST(req: Request) {
     });
     if (!testSet || !testSet.isPublished) return fail("Test set not available", 404, "NOT_FOUND");
 
-    if (testSet.isPremium) {
+    const isPaidRole = user.role === "ADMIN" || user.role === "PREMIUM" || user.role === "FAMILY";
+    if (testSet.isPremium && !isPaidRole) {
       const unlock = await db.unlock.findUnique({
         where: { userId_testSetId: { userId: user.id, testSetId: testSet.id } },
       });
