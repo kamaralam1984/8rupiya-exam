@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "tsx prisma/seed.ts",
+    "db:seed": "node --env-file-if-exists=.env.production --env-file-if-exists=.env.local --import tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "workers": "node --env-file=.env.local --import tsx workers/index.ts",
     "infra:up": "docker compose up -d",
