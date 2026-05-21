@@ -35,6 +35,13 @@ npm install --no-audit
 npx prisma generate
 npx prisma db push --skip-generate
 
+# 7b. Seed exam catalog (NEET, CTET, SSC, etc.). The seed script uses
+#     upserts and findFirst-then-create checks, so running it on every
+#     deploy is idempotent: existing rows are preserved, only missing
+#     ones get inserted.
+echo "==> Running seed (idempotent)…"
+npm run db:seed || echo "==> Seed step failed (non-fatal) — continuing deploy."
+
 # 8. Build Next.js
 npm run build
 
