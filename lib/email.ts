@@ -95,7 +95,6 @@ export async function sendOtpEmail(opts: {
 /** Crypto-strong 6-digit numeric code (no leading-zero confusion). */
 export function generateOtpCode(): string {
   const buf = new Uint32Array(1);
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   require("node:crypto").webcrypto.getRandomValues(buf);
   const n = buf[0] % 1000000;
   return n.toString().padStart(6, "0");
