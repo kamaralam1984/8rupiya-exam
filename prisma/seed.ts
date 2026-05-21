@@ -145,6 +145,54 @@ async function main() {
     });
     await attachQuestions(sampleSlug, 8);
 
+    // Subject-wise free mocks — one test set per subject so users can pick.
+    for (const subjectName of e.subjects) {
+      const subjectSlug = slugify(subjectName);
+      const subjectId = subjectIdBySlug.get(subjectSlug);
+      const bank = examQs[subjectSlug] ?? [];
+      if (!subjectId || bank.length === 0) continue; // skip subjects with no Qs yet
+
+      const tsSlug = `${e.slug}-${subjectSlug}-mock`;
+      await db.testSet.upsert({
+        where: { slug: tsSlug },
+        create: {
+          examId: exam.id,
+          slug: tsSlug,
+          title: `${e.name} · ${subjectName} Mock`,
+          description: `Free ${subjectName} drill for ${e.name} — focused practice on this subject only.`,
+          kind: "MOCK",
+          durationMin: Math.max(15, Math.min(parseInt(e.duration) || 60, 30)),
+          isPremium: false,
+          priceInPaise: 0,
+        },
+        update: {},
+      });
+
+      // Attach only this subject's questions.
+      const ts = await db.testSet.findUnique({ where: { slug: tsSlug } });
+      if (ts) {
+        const have = await db.testSetQuestion.count({ where: { testSetId: ts.id } });
+        if (have === 0) {
+          const subjectQs = await db.question.findMany({
+            where: { subjectId, source: { startsWith: `seed:${e.slug}:${subjectSlug}:` } },
+            select: { id: true },
+            orderBy: { source: "asc" },
+          });
+          if (subjectQs.length > 0) {
+            await db.testSetQuestion.createMany({
+              data: subjectQs.map((q, idx) => ({
+                testSetId: ts.id,
+                questionId: q.id,
+                order: idx + 1,
+                marksRight: 1,
+                marksWrong: -0.25,
+              })),
+            });
+          }
+        }
+      }
+    }
+
     // Premium mock — all available questions for this exam.
     const premiumSlug = `${e.slug}-premium-mock-1`;
     await db.testSet.upsert({

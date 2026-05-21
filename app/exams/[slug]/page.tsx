@@ -4,7 +4,11 @@ import Link from "next/link";
 import { EXAMS, getExam } from "@/lib/exams";
 import { Button } from "@/components/ui/button";
 import { SITE } from "@/lib/utils";
-import { BookOpen, Brain, Target, LineChart, Clock } from "lucide-react";
+import { BookOpen, Brain, Target, LineChart, Clock, ChevronRight } from "lucide-react";
+
+function slugify(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
 
 export function generateStaticParams() {
   return EXAMS.map((e) => ({ slug: e.slug }));
@@ -101,6 +105,48 @@ export default async function ExamPage({
               <Button size="lg" variant="outline">View Plans</Button>
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* Subject-wise free mocks */}
+      <section className="container pt-12">
+        <div className="flex items-end justify-between flex-wrap gap-2">
+          <div>
+            <h2 className="font-display text-2xl md:text-3xl font-bold tracking-tight">
+              Subject-wise mock tests
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Apna favourite subject choose karo aur sirf usi pe practice karo. 100% free.
+            </p>
+          </div>
+          <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+            Free · No payment needed
+          </span>
+        </div>
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {exam.subjects.map((s) => {
+            const subSlug = slugify(s);
+            return (
+              <Link
+                key={s}
+                href={`/test/${exam.slug}-${subSlug}-mock`}
+                className="group"
+              >
+                <div className="glass rounded-2xl p-5 gradient-border h-full flex items-center gap-4 hover:bg-white/[0.04] transition-colors">
+                  <div className="h-11 w-11 grid place-items-center rounded-xl bg-gradient-to-br from-brand-500/20 to-accent/20 shrink-0">
+                    <BookOpen className="h-5 w-5 text-brand-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold leading-tight">{s}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Subject-only drill · {exam.name}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-brand-500 group-hover:translate-x-0.5 transition" />
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
