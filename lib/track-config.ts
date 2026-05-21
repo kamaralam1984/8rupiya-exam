@@ -1,4 +1,5 @@
 export const TRACK_SLUGS = [
+  "neet",
   "ctet",
   "ssc",
   "railway",
@@ -74,6 +75,29 @@ const COMMON: QuickAction[] = [
 ];
 
 export const TRACK_CONFIGS: Record<TrackSlug, TrackConfig> = {
+  neet: {
+    slug: "neet",
+    name: "NEET",
+    short: "National Eligibility cum Entrance Test (UG)",
+    tagline: "Physics + Chemistry + Biology — NTA-calibrated mastery",
+    taglineHi: "फिजिक्स + केमिस्ट्री + बायोलॉजी — NTA पैटर्न के साथ महारत",
+    gradient: "from-emerald-500 via-teal-500 to-lime-500",
+    badge: "bg-emerald-500/20 text-emerald-300",
+    heroIcon: "TestTube",
+    vibe: "Bio + Phys + Chem",
+    signatureFeature: {
+      title: "Biology Drill",
+      titleHi: "बायोलॉजी ड्रिल",
+      sub: "30-Q daily biology rapid set — NCERT line-by-line",
+      subHi: "रोज़ 30 प्रश्न बायोलॉजी — NCERT लाइन-बाय-लाइन",
+      href: "/test/neet-bio-drill",
+    },
+    focusSubjects: ["Physics", "Chemistry", "Biology"],
+    quickActions: [
+      { href: "/exams/neet", icon: "TestTube", title: "NEET Mocks", sub: "Full-length NTA-pattern tests", accent: "text-emerald-400" },
+      ...COMMON,
+    ],
+  },
   ctet: {
     slug: "ctet",
     name: "CTET",
