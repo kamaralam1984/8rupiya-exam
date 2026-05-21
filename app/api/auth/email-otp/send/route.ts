@@ -29,7 +29,10 @@ export async function POST(req: Request) {
       const user = await db.user.findFirst({ where: { email: body.email.toLowerCase() } });
       // Silent success when email is unknown — anti-enumeration
       if (!user) return ok({ sent: true });
-      await issueOtp({ email: user.email!, purpose: "RESET", userId: user.id });
+      const issued = await issueOtp({ email: user.email!, purpose: "RESET", userId: user.id });
+      if (!issued.sent.ok) {
+        return fail("Could not send email right now. Please try again in a minute.", 502, "EMAIL_SEND_FAILED");
+      }
       return ok({ sent: true });
     }
 
@@ -40,7 +43,10 @@ export async function POST(req: Request) {
     if (!user?.email) return fail("Only email accounts can verify", 400);
     if (user.emailVerifiedAt) return ok({ alreadyVerified: true });
 
-    await issueOtp({ email: user.email, purpose: "VERIFY", userId: user.id });
+    const issued = await issueOtp({ email: user.email, purpose: "VERIFY", userId: user.id });
+    if (!issued.sent.ok) {
+      return fail("Could not send email right now. Please try again in a minute.", 502, "EMAIL_SEND_FAILED");
+    }
     return ok({ sent: true });
   } catch (e) {
     return handleError(e);

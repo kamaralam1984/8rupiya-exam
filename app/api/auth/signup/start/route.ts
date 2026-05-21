@@ -61,7 +61,10 @@ export async function POST(req: Request) {
 
     // Fire OTP — uses purpose=VERIFY so the verify endpoint can reuse the same
     // OTP code path. userId=null because the user doesn't exist yet.
-    await issueOtp({ email, purpose: "VERIFY", userId: null });
+    const issued = await issueOtp({ email, purpose: "VERIFY", userId: null });
+    if (!issued.sent.ok) {
+      return fail("Could not send verification code. Please check your email and try again.", 502, "EMAIL_SEND_FAILED");
+    }
 
     return ok({ sent: true, email });
   } catch (e) {

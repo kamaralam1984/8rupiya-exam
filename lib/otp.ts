@@ -50,6 +50,11 @@ export async function issueOtp(opts: {
   // In dev (no RESEND_API_KEY) the code is logged to console — useful for testing.
   if (!process.env.RESEND_API_KEY) {
     console.log(`[otp:DEV] ${opts.purpose} code for ${email}: ${code}`);
+  } else if (!sent.ok) {
+    // Resend was configured but rejected the send — usually a domain-verification or
+    // restricted-recipient issue. Log loudly so the failure shows up in journalctl
+    // instead of silently 200-OK'ing the user.
+    console.error(`[otp:SEND_FAIL] ${opts.purpose} email=${email} error="${sent.error}"`);
   }
 
   return { id: row.id, sent };
