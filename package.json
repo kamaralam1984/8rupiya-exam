@@ -14,7 +14,9 @@
     "db:studio": "prisma studio",
     "workers": "node --env-file=.env.local --import tsx workers/index.ts",
     "infra:up": "docker compose up -d",
-    "infra:down": "docker compose down"
+    "infra:down": "docker compose down",
+    "deploy": "bash scripts/push-to-github.sh",
+    "push": "bash scripts/push-to-github.sh"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
