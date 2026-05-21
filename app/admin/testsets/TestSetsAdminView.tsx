@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import { useToast } from "@/components/ui/toaster";
-import { EXAMS } from "@/lib/exams";
+import { useAdminExams } from "@/lib/use-admin-exams";
 import { cn } from "@/lib/utils";
 
 type TS = {
@@ -31,6 +31,7 @@ function rupees(paise: number) {
 }
 
 export function TestSetsAdminView() {
+  const exams = useAdminExams();
   const [sets, setSets] = useState<TS[] | null>(null);
   const [examSlug, setExamSlug] = useState("");
   const [q, setQ] = useState("");
@@ -77,7 +78,7 @@ export function TestSetsAdminView() {
             className="mt-1 bg-background border border-border rounded-md px-3 py-2 text-sm"
           >
             <option value="">All exams</option>
-            {EXAMS.map((e) => <option key={e.slug} value={e.slug}>{e.name}</option>)}
+            {(exams ?? []).map((e) => <option key={e.slug} value={e.slug}>{e.name}</option>)}
           </select>
         </label>
         <form className="flex gap-2 flex-1" onSubmit={(e) => { e.preventDefault(); load(); }}>

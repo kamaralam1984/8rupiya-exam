@@ -5,7 +5,7 @@ import { Loader2, FileText, Sparkles, BookOpen, ListChecks, X, Plus, Archive, Ar
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api-client";
-import { EXAMS } from "@/lib/exams";
+import { useAdminExams } from "@/lib/use-admin-exams";
 import { useToast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +44,7 @@ function humanSize(bytes: number | null) {
 }
 
 export function PdfAdminView() {
+  const exams = useAdminExams();
   const [pdfs, setPdfs] = useState<Pdf[] | null>(null);
   const [reordering, setReordering] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -371,7 +372,7 @@ export function PdfAdminView() {
               className="mt-1 w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
             >
               <option value="">— Select exam —</option>
-              {EXAMS.map((e) => <option key={e.slug} value={e.slug}>{e.name}</option>)}
+              {(exams ?? []).map((e) => <option key={e.slug} value={e.slug}>{e.name}</option>)}
             </select>
           </label>
           <label className="block">

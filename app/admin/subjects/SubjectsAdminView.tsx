@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import { useToast } from "@/components/ui/toaster";
-import { EXAMS } from "@/lib/exams";
+import { useAdminExams } from "@/lib/use-admin-exams";
 import { cn } from "@/lib/utils";
 
 type S = {
@@ -23,10 +23,16 @@ type S = {
 };
 
 export function SubjectsAdminView() {
-  const [examSlug, setExamSlug] = useState(EXAMS[0]?.slug ?? "");
+  const exams = useAdminExams();
+  const [examSlug, setExamSlug] = useState("");
   const [rows, setRows] = useState<S[] | null>(null);
   const [adding, setAdding] = useState<{ parentSlug: string | null } | null>(null);
   const toast = useToast();
+
+  // Default the dropdown to the first exam returned by the API once it loads.
+  useEffect(() => {
+    if (!examSlug && exams && exams.length > 0) setExamSlug(exams[0].slug);
+  }, [exams, examSlug]);
 
   async function load() {
     setRows(null);
@@ -81,11 +87,24 @@ export function SubjectsAdminView() {
         <select
           value={examSlug}
           onChange={(e) => setExamSlug(e.target.value)}
-          className="bg-background border border-border rounded-md px-3 py-2 text-sm"
+          disabled={!exams || exams.length === 0}
+          className="bg-background border border-border rounded-md px-3 py-2 text-sm disabled:opacity-60"
         >
-          {EXAMS.map((e) => <option key={e.slug} value={e.slug}>{e.name}</option>)}
+          {!exams ? (
+            <option value="">Loading…</option>
+          ) : exams.length === 0 ? (
+            <option value="">No exams in database — seed first</option>
+          ) : (
+            exams.map((e) => <option key={e.slug} value={e.slug}>{e.name}</option>)
+          )}
         </select>
       </label>
+
+      {exams && exams.length === 0 && (
+        <p className="mt-3 text-sm text-amber-400">
+          ⚠ No exams found in database. Run <code className="bg-white/10 px-1.5 py-0.5 rounded">npm run db:seed</code> on the server, or add exams via <Link href="/admin/exams" className="underline">/admin/exams</Link>.
+        </p>
+      )}
 
       {!rows ? (
         <div className="mt-8"><Loader2 className="h-5 w-5 animate-spin text-brand-500" /></div>
