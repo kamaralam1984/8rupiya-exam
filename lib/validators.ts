@@ -11,6 +11,24 @@ export const registerSchema = z
   })
   .refine((d) => d.email || d.phone, { message: "Provide email or phone" });
 
+/** Full student signup payload — used by /api/auth/signup/start (email OTP gated). */
+export const signupStartSchema = z.object({
+  name: z.string().min(2, "Name min 2 chars").max(80),
+  email: z.string().email("Valid email required"),
+  phone: z.string().regex(/^\+?\d{10,14}$/, "10-14 digit phone, +91 optional"),
+  age: z.number().int().min(8, "Min age 8").max(100, "Max age 100"),
+  examSlug: z.string().min(1, "Exam selection required"),
+  password: z.string().min(8, "Password min 8 chars").max(120),
+  language: z.enum(["en", "hi"]).default("en"),
+  ref: z.string().max(20).optional(),
+});
+export type SignupStartInput = z.infer<typeof signupStartSchema>;
+
+export const signupVerifySchema = z.object({
+  email: z.string().email(),
+  code: z.string().regex(/^\d{6}$/, "6-digit code expected"),
+});
+
 export const loginSchema = z
   .object({
     email: z.string().email().optional(),

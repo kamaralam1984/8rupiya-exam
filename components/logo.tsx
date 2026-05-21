@@ -19,15 +19,18 @@ const HEIGHTS: Record<NonNullable<LogoProps["size"]>, number> = {
   xl: 88,
 };
 
-// Source image aspect ratio (1536 x 1024 -> ~1.5)
-const ASPECT = 1536 / 1024;
+// Navbar/header logo uses a tighter crop (10% top + 10% bottom removed from the
+// 1536x1024 master → 1536x819, aspect ≈ 1.875). Hero keeps /brand-logo.png
+// independent so each can be tuned without affecting the other.
+const NAV_LOGO_SRC = "/brand-logo-nav.png";
+const NAV_ASPECT = 1536 / 819;
 
 function BrandMark({ size = "md", className }: { size?: NonNullable<LogoProps["size"]>; className?: string }) {
   const h = HEIGHTS[size];
-  const w = Math.round(h * ASPECT);
+  const w = Math.round(h * NAV_ASPECT);
   return (
     <Image
-      src="/brand-logo.png"
+      src={NAV_LOGO_SRC}
       alt="8rupiya — Smart Exam Practice"
       width={w}
       height={h}

@@ -296,16 +296,22 @@ model Unlock {
 model Subscription {
   id                    String   @id @default(cuid())
   userId                String
+  /// Legacy free-text plan label ("MONTH" / "YEAR" / "LIFETIME"). Kept for
+  /// back-compat with admin grant flow; new purchases also populate planId.
   plan                  String
+  /// FK to Plan when bought via the Plans system (nullable for legacy rows).
+  planId                String?
   startsAt              DateTime @default(now())
   endsAt                DateTime
   active                Boolean  @default(true)
   razorpaySubscriptionId String? @unique
   razorpayPlanId        String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planRecord  Plan? @relation(fields: [planId], references: [id], onDelete: SetNull)
 
   @@index([userId, active])
+  @@index([planId])
 }
 
 model Pdf {
@@ -507,6 +513,24 @@ model PlatformSetting {
 enum EmailOtpPurpose {
   VERIFY
   RESET
+}
+
+model Plan {
+  id            String   @id @default(cuid())
+  slug          String   @unique          /// kebab-case, used in URLs + admin lookups
+  name          String                    /// "Premium Monthly"
+  description   String?
+  priceInPaise  Int                       /// 0 for the Free plan
+  durationDays  Int                       /// 9999 = effectively lifetime; 0 = forever-free
+  targetRole    Role     @default(PREMIUM) /// role the user is promoted to on purchase
+  features      String[] @default([])     /// feature-flag keys this plan grants (e.g. "mock_tests","ai_doubt")
+  isActive      Boolean  @default(true)
+  isHighlighted Boolean  @default(false)  /// renders the "Most popular" ribbon on pricing
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  subscriptions Subscription[]
 }
 
 model EmailOtp {

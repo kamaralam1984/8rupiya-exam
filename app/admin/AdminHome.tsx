@@ -71,6 +71,7 @@ export function AdminHome() {
         <Tile href="/admin/subjects" icon={Brain} title="Subjects & Splits" body="Combine or split parent subjects (e.g. Science → Physics + Chemistry + Biology)." />
         <Tile href="/admin/users" icon={Users} title="Manage Users" body="Create, edit, delete users · reset passwords · promote admins." />
         <Tile href="/admin/payments" icon={IndianRupee} title="Payments & Unlocks" body="View transactions and grant ₹8 unlocks manually." />
+        <Tile href="/admin/plans" icon={IndianRupee} title="Subscription Plans" body="Create / edit student subscription tiers · price, duration, features included." />
         <Tile href="/admin/features" icon={SlidersHorizontal} title="Features & Plan" body="Feature flags on/off · paid/free · ₹8 plan duration (month/year/lifetime)." highlight />
         <Tile href="/admin/audit" icon={ToggleRight} title="Audit Log" body="Every admin action recorded with actor + target." />
       </div>

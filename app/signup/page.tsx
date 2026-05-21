@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { AuthForm } from "@/components/auth-form";
+import { db } from "@/lib/db";
+import { SignupClient } from "./SignupClient";
 
 export const metadata: Metadata = {
   title: "Sign up",
@@ -8,11 +9,27 @@ export const metadata: Metadata = {
   alternates: { canonical: "/signup" },
 };
 
-export default function SignUpPage() {
+export const dynamic = "force-dynamic";
+
+async function getActiveExams() {
+  try {
+    const exams = await db.exam.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      select: { slug: true, name: true },
+    });
+    return exams;
+  } catch {
+    return [];
+  }
+}
+
+export default async function SignUpPage() {
+  const exams = await getActiveExams();
   return (
-    <section className="container pt-16 pb-20 max-w-md">
+    <section className="container pt-12 pb-20 max-w-md">
       <Suspense fallback={null}>
-        <AuthForm mode="signup" />
+        <SignupClient exams={exams} />
       </Suspense>
     </section>
   );

@@ -61,18 +61,20 @@ export function ExamLogo({
 }: Props) {
   const sz = SIZE[size];
   if (logoUrl) {
-    // Real exam badges are usually circular crests — drop the white tile and let the
-    // logo bleed into a rounded container. ring keeps it visible on dark + light themes.
+    // Exam crests come in different shapes — circular (CTET/NEET), shield (Class 10),
+    // shield with banners (SSC). object-contain keeps the FULL logo visible; scale-140
+    // makes it visually 40% larger inside the round container while overflow-hidden
+    // crops any spillover cleanly to the circle edge.
     return (
       <span
         className={cn(
-          "grid place-items-center rounded-full overflow-hidden shrink-0 ring-1 ring-border/60",
+          "grid place-items-center rounded-full overflow-hidden shrink-0 ring-1 ring-border/60 bg-white/40 dark:bg-white/5",
           sz.box,
           className,
         )}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={logoUrl} alt={alt} className="h-full w-full object-cover" />
+        <img src={logoUrl} alt={alt} className="h-full w-full object-contain scale-[1.4]" />
       </span>
     );
   }

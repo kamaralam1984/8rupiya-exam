@@ -112,7 +112,13 @@ export async function revokeSubscription(userId: string) {
 
 export type FeatureGate = "ok" | "disabled" | "paywall";
 
-/** What the user can do with this feature. ADMIN/PREMIUM/FAMILY roles always see "ok". */
+/**
+ * What the user can do with this feature.
+ *  · ADMIN / PREMIUM / FAMILY roles always see "ok".
+ *  · If the user has an active Subscription tied to a Plan, and that plan's
+ *    features array contains this key → "ok" even without role upgrade.
+ *  · Otherwise falls back to the legacy paywall (`requiresPaid` + `hasPaidAccess`).
+ */
 export async function checkFeatureAccess(key: string, userId: string | null): Promise<FeatureGate> {
   if (userId && (await isPaidRoleUser(userId))) return "ok";
   const flag = await getFlag(key);
@@ -121,6 +127,19 @@ export async function checkFeatureAccess(key: string, userId: string | null): Pr
   if (!flag.enabled) return "disabled";
   if (!flag.requiresPaid) return "ok";
   if (!userId) return "paywall";
+
+  // Plan-feature gate: active subscription whose plan includes this feature key
+  const planUnlock = await db.subscription.findFirst({
+    where: {
+      userId,
+      active: true,
+      endsAt: { gt: new Date() },
+      planRecord: { features: { has: key } },
+    },
+    select: { id: true },
+  });
+  if (planUnlock) return "ok";
+
   const paid = await hasPaidAccess(userId);
   return paid ? "ok" : "paywall";
 }
