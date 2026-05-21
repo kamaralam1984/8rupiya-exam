@@ -43,19 +43,21 @@ export async function GET() {
       },
     });
 
-    return ok(
-      books.map((b) => ({
+    return ok({
+      isAdmin: user.role === "ADMIN",
+      books: books.map((b) => ({
         id: b.id,
         filename: b.filename,
         pageCount: b.pageCount,
         fileSize: b.fileSize,
         status: b.status,
         createdAt: b.createdAt.toISOString(),
+        sortOrder: b.sortOrder,
         // Pull human-friendly title + subject hint from the admin upload config
         title: (b.config as any)?.title ?? b.filename.replace(/\.pdf$/i, ""),
         subjectSlug: (b.config as any)?.subjectSlug ?? null,
       })),
-    );
+    });
   } catch (e) {
     return handleError(e);
   }
