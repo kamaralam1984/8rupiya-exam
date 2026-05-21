@@ -11,7 +11,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function ReaderPage({ params }: { params: Promise<{ pdfId: string }> }) {
+export default async function ReaderPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ pdfId: string }>;
+  searchParams: Promise<{ page?: string; hl?: string }>;
+}) {
   let user;
   try {
     user = await requireUser();
@@ -20,9 +26,9 @@ export default async function ReaderPage({ params }: { params: Promise<{ pdfId: 
     throw e;
   }
   const isAdmin = user.role === "ADMIN";
-  if (!isAdmin && user.examTrack !== "class-10") redirect("/library");
 
   const { pdfId } = await params;
+  const { page, hl } = await searchParams;
   const pdf = await db.pdf.findUnique({
     where: { id: pdfId },
     select: {
@@ -35,10 +41,15 @@ export default async function ReaderPage({ params }: { params: Promise<{ pdfId: 
     },
   });
   if (!pdf) notFound();
-  if (!isAdmin && pdf.exam?.slug !== "class-10") notFound();
+  // Access: admin → any PDF. Otherwise the PDF's exam must match the user's
+  // track. (Previously hard-coded to class-10 only; relaxed so any exam track
+  // works with the "Open in Book" result-page feature.)
+  if (!isAdmin && pdf.exam?.slug !== user.examTrack) notFound();
 
   const title = (pdf.config as any)?.title ?? pdf.filename.replace(/\.pdf$/i, "");
   const subjectSlug = (pdf.config as any)?.subjectSlug ?? null;
+  const parsedPage = page ? parseInt(page, 10) : NaN;
+  const initialPage = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : null;
 
   return (
     <ReaderClient
@@ -48,6 +59,8 @@ export default async function ReaderPage({ params }: { params: Promise<{ pdfId: 
       pageCount={pdf.pageCount}
       subjectSlug={subjectSlug}
       examName={pdf.exam?.name ?? "Uncategorized"}
+      initialPage={initialPage}
+      initialHighlight={hl ?? null}
     />
   );
 }

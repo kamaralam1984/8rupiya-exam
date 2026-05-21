@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Brain, RefreshCw, Trophy, Target, Clock, CheckCircle2, XCircle, MinusCircle, Sparkles } from "lucide-react";
+import { Loader2, Brain, RefreshCw, Trophy, Target, Clock, CheckCircle2, XCircle, MinusCircle, Sparkles, BookOpen, ChevronDown, ChevronUp, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { api } from "@/lib/api-client";
@@ -23,9 +23,14 @@ type AnswerWithQ = {
     options: string[];
     correctIndex: number;
     explanation: string | null;
+    explanationLong: string | null;
     difficulty: string;
+    pdfId: string | null;
+    pdfPage: number | null;
+    pdfHighlight: string | null;
     subject: { name: string } | null;
     chapter: { name: string } | null;
+    pdf: { id: string; filename: string; config: unknown } | null;
   };
 };
 
@@ -512,6 +517,133 @@ function ReviewCard({ answer, index, totalIndex }: { answer: AnswerWithQ; index:
           <p className="leading-relaxed text-muted-foreground">{q.explanation}</p>
         </motion.div>
       )}
+
+      {/* Step-by-step zero-level explanation + Open in Book — for wrong/skipped only */}
+      {!correct && <DeepExplain question={q} />}
     </motion.div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────────── */
+
+function DeepExplain({ question }: { question: AnswerWithQ["question"] }) {
+  const [open, setOpen] = useState<boolean>(Boolean(question.explanationLong));
+  const [loading, setLoading] = useState(false);
+  const [text, setText] = useState<string | null>(question.explanationLong);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function load() {
+    if (text) { setOpen(true); return; }
+    setLoading(true);
+    setErr(null);
+    const r = await api<{ explanation: string; cached: boolean }>("/api/ai/explain", {
+      method: "POST",
+      body: JSON.stringify({ questionId: question.id, language: "en" }),
+    });
+    setLoading(false);
+    if (!r.ok) {
+      setErr(r.error.message ?? r.error.code);
+      return;
+    }
+    setText(r.data.explanation);
+    setOpen(true);
+  }
+
+  const hasBook = !!(question.pdfId && question.pdfPage);
+  const bookHref = hasBook
+    ? `/library/${question.pdfId}?page=${question.pdfPage}${
+        question.pdfHighlight ? `&hl=${encodeURIComponent(question.pdfHighlight)}` : ""
+      }`
+    : null;
+
+  return (
+    <div className="mt-3 flex flex-col gap-2">
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={text ? () => setOpen((v) => !v) : load}
+          disabled={loading}
+          className="gap-1.5"
+        >
+          {loading ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Lightbulb className="h-3.5 w-3.5 text-amber-400" />
+          )}
+          {text
+            ? open
+              ? "Step-by-step chhupao"
+              : "Step-by-step dekho"
+            : "Step-by-step samjhao (zero level)"}
+          {text && (open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />)}
+        </Button>
+
+        {hasBook && bookHref && (
+          <Link href={bookHref}>
+            <Button type="button" size="sm" variant="outline" className="gap-1.5">
+              <BookOpen className="h-3.5 w-3.5 text-emerald-400" />
+              Book mein dekho
+            </Button>
+          </Link>
+        )}
+      </div>
+
+      {err && <p className="text-xs text-rose-400">⚠ {err}</p>}
+
+      <AnimatePresence initial={false}>
+        {open && text && (
+          <motion.div
+            key="deep"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="rounded-lg border border-emerald-500/25 bg-emerald-500/5 p-3 text-sm leading-relaxed">
+              <p className="text-xs uppercase tracking-wide text-emerald-400 font-semibold mb-2 flex items-center gap-1">
+                <Lightbulb className="h-3.5 w-3.5" /> Step-by-step samajh (zero level)
+              </p>
+              <DeepExplainBody text={text} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/**
+ * Renders the cached explanation string with very light Markdown support:
+ * lines starting with `**Concept:**` / `**Step-by-step:**` / `**Why students get this wrong:**`
+ * become bold headings; numeric "1.", "2.", … lines become an ordered list.
+ */
+function DeepExplainBody({ text }: { text: string }) {
+  const lines = text.split("\n").filter((l) => l.length > 0);
+  return (
+    <div className="space-y-2 text-muted-foreground">
+      {lines.map((line, i) => {
+        if (/^\*\*[^*]+\*\*\s*$/.test(line.trim())) {
+          return (
+            <p key={i} className="text-foreground font-semibold mt-2 first:mt-0">
+              {line.replace(/\*\*/g, "")}
+            </p>
+          );
+        }
+        // Inline bold prefix like "**Concept:** Newton's First Law"
+        const m = line.match(/^\*\*([^*]+)\*\*\s*(.*)$/);
+        if (m) {
+          return (
+            <p key={i}>
+              <span className="text-foreground font-semibold">{m[1]} </span>
+              <span>{m[2]}</span>
+            </p>
+          );
+        }
+        return <p key={i}>{line}</p>;
+      })}
+    </div>
   );
 }
