@@ -121,12 +121,17 @@ export function TestRunner(props: TestRunnerProps) {
     [answers]
   );
 
-  const select = (i: number) =>
+  const select = (i: number) => {
     setAnswers((prev) => {
       const next = [...prev];
       next[index] = { ...next[index], selected: i };
       return next;
     });
+    // Auto-advance to next question after a short pause
+    if (index < total - 1) {
+      setTimeout(() => setIndex((cur) => Math.min(total - 1, cur + 1)), 500);
+    }
+  };
 
   const clear = () =>
     setAnswers((prev) => {
@@ -225,17 +230,27 @@ export function TestRunner(props: TestRunnerProps) {
         </div>
       </div>
 
-      <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
-        <span>{answered}/{total} answered</span>
-        <span className={timeLeft <= 60 ? "text-red-500" : timeLeft <= 300 ? "text-amber-500" : ""}>
-          Time remaining
-        </span>
-      </div>
-      <Progress value={(answered / total) * 100} className="mb-1.5 h-2" />
-      <Progress
-        value={(timeLeft / (durationMin * 60)) * 100}
-        className={`mb-6 h-1.5 ${timeLeft <= 60 ? "[&>div]:bg-red-500" : timeLeft <= 300 ? "[&>div]:bg-amber-500" : "[&>div]:bg-brand-500"}`}
-      />
+      {(() => {
+        const timePercent = (timeLeft / (durationMin * 60)) * 100;
+        const hue = Math.max(0, Math.min(120, timePercent * 1.2));
+        const barColor = `hsl(${hue}, 80%, 45%)`;
+        const timeLabel = timeLeft <= 60 ? "text-red-500" : timeLeft <= 300 ? "text-amber-500" : "";
+        return (
+          <>
+            <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+              <span>{answered}/{total} answered</span>
+              <span className={timeLabel}>Time remaining</span>
+            </div>
+            <Progress value={(answered / total) * 100} className="mb-1.5 h-2" />
+            <div className="mb-6 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-1000"
+                style={{ width: `${timePercent}%`, backgroundColor: barColor }}
+              />
+            </div>
+          </>
+        );
+      })()}
 
       <div className="grid md:grid-cols-[1fr_280px] gap-6">
         <div>
