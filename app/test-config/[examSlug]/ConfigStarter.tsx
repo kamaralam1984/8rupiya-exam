@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Clock, BookOpen } from "lucide-react";
+import { Loader2, Clock, BookOpen, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TestRunner } from "@/components/test-runner";
 import { api } from "@/lib/api-client";
@@ -33,14 +33,17 @@ type State =
 export function ConfigStarter({
   examSlug,
   examName,
+  subjects,
 }: {
   examSlug: string;
   examName: string;
+  subjects: string[];
 }) {
   const router = useRouter();
   const [qCount, setQCount] = useState(50);
   const [timeMin, setTimeMin] = useState(DEFAULT_TIMES[50]);
   const [timeCustom, setTimeCustom] = useState(false);
+  const [subject, setSubject] = useState<string | null>(null);
   const [state, setState] = useState<State>({ kind: "config" });
 
   function handleQCount(n: number) {
@@ -52,7 +55,7 @@ export function ConfigStarter({
     setState({ kind: "loading" });
     const r = await api<StartResp>("/api/attempts/start-custom", {
       method: "POST",
-      body: JSON.stringify({ examSlug, questionCount: qCount, durationMin: timeMin }),
+      body: JSON.stringify({ examSlug, questionCount: qCount, durationMin: timeMin, subject: subject ?? undefined }),
     });
     if (!r.ok) {
       if (r.error.code === "UNAUTHENTICATED") {
@@ -111,6 +114,41 @@ export function ConfigStarter({
             Apni pasand ke questions aur time ke saath practice karo
           </p>
         </div>
+
+        {/* Subject selection */}
+        {subjects.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Layers className="h-4 w-4 text-brand-500" />
+              <p className="font-semibold text-sm">Kaunsa subject?</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setSubject(null)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                  subject === null
+                    ? "bg-brand-500 text-white border-brand-500"
+                    : "glass border-white/10 hover:border-brand-500/50"
+                }`}
+              >
+                All Subjects
+              </button>
+              {subjects.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setSubject(s)}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                    subject === s
+                      ? "bg-brand-500 text-white border-brand-500"
+                      : "glass border-white/10 hover:border-brand-500/50"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Question count */}
         <div>
@@ -176,6 +214,10 @@ export function ConfigStarter({
             <span className="text-foreground font-medium">
               {((timeMin * 60) / qCount).toFixed(0)}s
             </span>
+          </div>
+          <div className="flex justify-between">
+            <span>Subject</span>
+            <span className="text-foreground font-medium">{subject ?? "All subjects"}</span>
           </div>
           <div className="flex justify-between">
             <span>Source</span>

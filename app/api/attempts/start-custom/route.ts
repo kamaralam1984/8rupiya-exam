@@ -9,6 +9,7 @@ const schema = z.object({
   examSlug: z.string(),
   questionCount: z.number().int().min(10).max(300),
   durationMin: z.number().int().min(5).max(300),
+  subject: z.string().optional(),
 });
 
 export async function POST(req: Request) {
@@ -22,28 +23,27 @@ export async function POST(req: Request) {
     });
     if (!exam) return fail("Exam not found", 404, "NOT_FOUND");
 
+    const subjectFilter = body.subject ? { subject: { name: body.subject } } : {};
+
     // Prefer PDF-sourced approved questions
     let questions = await db.question.findMany({
-      where: {
-        examSlug: body.examSlug,
-        pdfId: { not: null },
-        approved: true,
-      },
+      where: { examSlug: body.examSlug, pdfId: { not: null }, approved: true, ...subjectFilter },
       select: { id: true },
     });
 
     // Fall back: PDF questions without approval filter
     if (questions.length < 10) {
       questions = await db.question.findMany({
-        where: { examSlug: body.examSlug, pdfId: { not: null } },
+        where: { examSlug: body.examSlug, pdfId: { not: null }, ...subjectFilter },
         select: { id: true },
       });
     }
 
-    // Fall back: any questions for this exam via subjects
+    // Fall back: any questions for this exam
     if (questions.length < 10) {
       questions = await db.question.findMany({
         where: {
+          ...subjectFilter,
           OR: [
             { examSlug: body.examSlug },
             { subject: { exam: { slug: body.examSlug } } },
