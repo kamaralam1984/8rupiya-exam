@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, LogOut, Flame, Trophy, LayoutDashboard, Brain, Calendar, Sparkles, Settings, Bookmark } from "lucide-react";
+import { User, LogOut, Flame, Trophy, LayoutDashboard, Brain, Calendar, Sparkles, Settings, Bookmark, TrendingUp } from "lucide-react";
 import { useUser } from "@/lib/use-user";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
@@ -59,6 +59,7 @@ export function UserMenu() {
             <p className="text-xs text-muted-foreground">XP {user.xp} · Streak {user.streak}d</p>
           </div>
           <MenuLink href="/dashboard" icon={LayoutDashboard} label="Dashboard" onClick={() => setOpen(false)} />
+          <MenuLink href="/progress" icon={TrendingUp} label="My Progress" onClick={() => setOpen(false)} />
           <MenuLink href="/doubt" icon={Brain} label="AI Doubt Solver" onClick={() => setOpen(false)} />
           <MenuLink href="/predict" icon={Sparkles} label="AI Predicted Test" onClick={() => setOpen(false)} />
           <MenuLink href="/planner" icon={Calendar} label="Study Planner" onClick={() => setOpen(false)} />
