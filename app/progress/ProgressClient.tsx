@@ -210,7 +210,7 @@ export function ProgressClient() {
                     <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="transparent" />
                     <YAxis tickFormatter={(v) => `${(v * 100).toFixed(0)}%`} tick={{ fontSize: 11 }} stroke="transparent" domain={[0, 1]} />
                     <Tooltip
-                      formatter={(v: number) => [`${(v * 100).toFixed(1)}%`, "Accuracy"]}
+                      formatter={(v) => [`${((Number(v) || 0) * 100).toFixed(1)}%`, "Accuracy"]}
                       contentStyle={{ background: "rgba(15,15,20,0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
                     />
                     <Area type="monotone" dataKey="accuracy" stroke="#7c3aed" strokeWidth={2} fill="url(#accGrad)" isAnimationActive animationDuration={800} />
@@ -236,7 +236,7 @@ export function ProgressClient() {
                     <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="transparent" />
                     <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke="transparent" />
                     <Tooltip
-                      formatter={(v: number) => [v, "Tests"]}
+                      formatter={(v) => [Number(v) || 0, "Tests"]}
                       contentStyle={{ background: "rgba(15,15,20,0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
                     />
                     <Bar dataKey="attempts" fill="#06b6d4" radius={[4, 4, 0, 0]} isAnimationActive animationDuration={700} />
