@@ -23,5 +23,5 @@ export default async function TestConfigPage({
   const exam = getExam(examSlug);
   if (!exam) notFound();
 
-  return <ConfigStarter examSlug={exam.slug} examName={exam.name} subjects={exam.subjects} />;
+  return <ConfigStarter examSlug={exam.slug} examName={exam.name} subjects={exam.subjects} subjectGroups={exam.subjectGroups} />;
 }

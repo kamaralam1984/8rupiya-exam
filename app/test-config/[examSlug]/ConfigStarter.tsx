@@ -1,11 +1,12 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Clock, BookOpen, Layers } from "lucide-react";
+import { Loader2, Clock, BookOpen, Layers, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TestRunner } from "@/components/test-runner";
 import { api } from "@/lib/api-client";
 import type { Question } from "@/components/question-card";
+import type { SubjectGroup } from "@/lib/exams";
 
 const Q_OPTIONS = [25, 50, 100, 200, 300];
 const DEFAULT_TIMES: Record<number, number> = {
@@ -30,20 +31,29 @@ type State =
   | { kind: "error"; message: string }
   | { kind: "ready"; data: StartResp };
 
+function subjectLabel(selected: string[] | null): string {
+  if (!selected || selected.length === 0) return "All subjects";
+  if (selected.length === 1) return selected[0];
+  return `${selected[0]} +${selected.length - 1} more`;
+}
+
 export function ConfigStarter({
   examSlug,
   examName,
   subjects,
+  subjectGroups,
 }: {
   examSlug: string;
   examName: string;
   subjects: string[];
+  subjectGroups?: SubjectGroup[];
 }) {
   const router = useRouter();
   const [qCount, setQCount] = useState(50);
   const [timeMin, setTimeMin] = useState(DEFAULT_TIMES[50]);
   const [timeCustom, setTimeCustom] = useState(false);
-  const [subject, setSubject] = useState<string | null>(null);
+  const [selectedSubjects, setSelectedSubjects] = useState<string[] | null>(null);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [state, setState] = useState<State>({ kind: "config" });
 
   function handleQCount(n: number) {
@@ -51,11 +61,41 @@ export function ConfigStarter({
     if (!timeCustom) setTimeMin(DEFAULT_TIMES[n]);
   }
 
+  function toggleGroup(label: string) {
+    setExpandedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
+  }
+
+  function selectGroup(groupSubjects: string[]) {
+    const alreadySelected =
+      selectedSubjects !== null &&
+      groupSubjects.every((s) => selectedSubjects.includes(s)) &&
+      selectedSubjects.length === groupSubjects.length;
+    setSelectedSubjects(alreadySelected ? null : groupSubjects);
+  }
+
+  function selectSingle(s: string) {
+    const alreadySelected = selectedSubjects?.length === 1 && selectedSubjects[0] === s;
+    setSelectedSubjects(alreadySelected ? null : [s]);
+  }
+
+  function isGroupSelected(groupSubjects: string[]) {
+    return (
+      selectedSubjects !== null &&
+      selectedSubjects.length === groupSubjects.length &&
+      groupSubjects.every((s) => selectedSubjects.includes(s))
+    );
+  }
+
   async function startTest() {
     setState({ kind: "loading" });
     const r = await api<StartResp>("/api/attempts/start-custom", {
       method: "POST",
-      body: JSON.stringify({ examSlug, questionCount: qCount, durationMin: timeMin, subject: subject ?? undefined }),
+      body: JSON.stringify({
+        examSlug,
+        questionCount: qCount,
+        durationMin: timeMin,
+        subjects: selectedSubjects ?? undefined,
+      }),
     });
     if (!r.ok) {
       if (r.error.code === "UNAUTHENTICATED") {
@@ -102,6 +142,10 @@ export function ConfigStarter({
     );
   }
 
+  const btnBase = "px-4 py-2 rounded-xl text-sm font-medium border transition-colors";
+  const btnActive = "bg-brand-500 text-white border-brand-500";
+  const btnIdle = "glass border-white/10 hover:border-brand-500/50";
+
   return (
     <div className="container py-12 max-w-lg">
       <div className="glass rounded-3xl p-8 gradient-border space-y-8">
@@ -122,30 +166,90 @@ export function ConfigStarter({
               <Layers className="h-4 w-4 text-brand-500" />
               <p className="font-semibold text-sm">Kaunsa subject?</p>
             </div>
-            <div className="flex flex-wrap gap-2">
+
+            <div className="space-y-2">
+              {/* All Subjects */}
               <button
-                onClick={() => setSubject(null)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${
-                  subject === null
-                    ? "bg-brand-500 text-white border-brand-500"
-                    : "glass border-white/10 hover:border-brand-500/50"
-                }`}
+                onClick={() => setSelectedSubjects(null)}
+                className={`${btnBase} ${selectedSubjects === null ? btnActive : btnIdle}`}
               >
                 All Subjects
               </button>
-              {subjects.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSubject(s)}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${
-                    subject === s
-                      ? "bg-brand-500 text-white border-brand-500"
-                      : "glass border-white/10 hover:border-brand-500/50"
-                  }`}
-                >
-                  {s}
-                </button>
-              ))}
+
+              {subjectGroups ? (
+                /* Grouped layout */
+                <div className="space-y-2 mt-1">
+                  {subjectGroups.map((group) => {
+                    const isExpanded = expandedGroups[group.label] ?? false;
+                    const groupActive = isGroupSelected(group.subjects);
+                    const hasChildren = group.subjects.length > 1;
+                    return (
+                      <div key={group.label} className="rounded-xl overflow-hidden">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => selectGroup(group.subjects)}
+                            className={`${btnBase} flex-1 text-left ${groupActive ? btnActive : btnIdle}`}
+                          >
+                            {group.label}
+                            {hasChildren && (
+                              <span className="ml-1 text-xs opacity-60">
+                                ({group.subjects.join(", ")})
+                              </span>
+                            )}
+                          </button>
+                          {hasChildren && (
+                            <button
+                              onClick={() => toggleGroup(group.label)}
+                              className={`${btnBase} px-2 py-2 ${btnIdle}`}
+                              title={isExpanded ? "Collapse" : "Expand sub-subjects"}
+                            >
+                              {isExpanded ? (
+                                <ChevronDown className="h-3.5 w-3.5" />
+                              ) : (
+                                <ChevronRight className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                          )}
+                        </div>
+                        {/* Sub-subjects */}
+                        {hasChildren && isExpanded && (
+                          <div className="flex flex-wrap gap-2 mt-2 pl-3">
+                            {group.subjects.map((s) => {
+                              const subActive =
+                                selectedSubjects?.length === 1 && selectedSubjects[0] === s;
+                              return (
+                                <button
+                                  key={s}
+                                  onClick={() => selectSingle(s)}
+                                  className={`${btnBase} text-xs ${subActive ? btnActive : btnIdle}`}
+                                >
+                                  {s}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                /* Flat layout */
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {subjects.map((s) => {
+                    const active = selectedSubjects?.length === 1 && selectedSubjects[0] === s;
+                    return (
+                      <button
+                        key={s}
+                        onClick={() => selectSingle(s)}
+                        className={`${btnBase} ${active ? btnActive : btnIdle}`}
+                      >
+                        {s}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -161,11 +265,7 @@ export function ConfigStarter({
               <button
                 key={n}
                 onClick={() => handleQCount(n)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${
-                  qCount === n
-                    ? "bg-brand-500 text-white border-brand-500"
-                    : "glass border-white/10 hover:border-brand-500/50"
-                }`}
+                className={`${btnBase} ${qCount === n ? btnActive : btnIdle}`}
               >
                 {n} Q
               </button>
@@ -187,11 +287,7 @@ export function ConfigStarter({
               <button
                 key={t}
                 onClick={() => { setTimeMin(t); setTimeCustom(t !== DEFAULT_TIMES[qCount]); }}
-                className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${
-                  timeMin === t
-                    ? "bg-brand-500 text-white border-brand-500"
-                    : "glass border-white/10 hover:border-brand-500/50"
-                }`}
+                className={`${btnBase} ${timeMin === t ? btnActive : btnIdle}`}
               >
                 {t} min
               </button>
@@ -217,7 +313,7 @@ export function ConfigStarter({
           </div>
           <div className="flex justify-between">
             <span>Subject</span>
-            <span className="text-foreground font-medium">{subject ?? "All subjects"}</span>
+            <span className="text-foreground font-medium">{subjectLabel(selectedSubjects)}</span>
           </div>
           <div className="flex justify-between">
             <span>Source</span>

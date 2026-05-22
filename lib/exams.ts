@@ -18,12 +18,15 @@ export type ExamIconKey =
   | "stethoscope"
   | "book";
 
+export type SubjectGroup = { label: string; subjects: string[] };
+
 export type Exam = {
   slug: string;
   name: string;
   short: string;
   description: string;
   subjects: string[];
+  subjectGroups?: SubjectGroup[];
   duration: string;
   questions: number;
   highlight?: boolean;
@@ -120,7 +123,14 @@ export const EXAMS: Exam[] = [
     short: "CBSE / ICSE / State Boards",
     description:
       "Chapter-wise tests for Class 10 Science, Maths, Social Science, English and Hindi with smart revision sets and weakness analysis.",
-    subjects: ["Science", "Maths", "Social Science", "English", "Hindi"],
+    subjects: ["Physics", "Chemistry", "Biology", "Maths", "History", "Geography", "Civics", "Economics", "English", "Hindi"],
+    subjectGroups: [
+      { label: "Science", subjects: ["Physics", "Chemistry", "Biology"] },
+      { label: "Social Science", subjects: ["History", "Geography", "Civics", "Economics"] },
+      { label: "Maths", subjects: ["Maths"] },
+      { label: "English", subjects: ["English"] },
+      { label: "Hindi", subjects: ["Hindi"] },
+    ],
     duration: "60 min",
     questions: 40,
     icon: "school",

@@ -9,7 +9,7 @@ const schema = z.object({
   examSlug: z.string(),
   questionCount: z.number().int().min(10).max(300),
   durationMin: z.number().int().min(5).max(300),
-  subject: z.string().optional(),
+  subjects: z.array(z.string()).optional(),
 });
 
 export async function POST(req: Request) {
@@ -23,7 +23,10 @@ export async function POST(req: Request) {
     });
     if (!exam) return fail("Exam not found", 404, "NOT_FOUND");
 
-    const subjectFilter = body.subject ? { subject: { name: body.subject } } : {};
+    const subjectFilter =
+      body.subjects && body.subjects.length > 0
+        ? { subject: { name: { in: body.subjects } } }
+        : {};
 
     // Prefer PDF-sourced approved questions
     let questions = await db.question.findMany({
