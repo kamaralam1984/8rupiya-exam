@@ -40,6 +40,7 @@ export function TestRunner(props: TestRunnerProps) {
   const [submitting, setSubmitting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(durationMin * 60);
 
   const startedAtRef = useRef(Date.now());
   const lastTickRef = useRef(Date.now());
@@ -213,6 +214,7 @@ export function TestRunner(props: TestRunnerProps) {
             startedAt={startedAtRef.current}
             durationMin={durationMin}
             onExpire={submit}
+            onTick={setTimeLeft}
           />
           <button
             className="md:hidden glass rounded-md px-3 py-1.5 text-xs font-medium"
@@ -223,7 +225,17 @@ export function TestRunner(props: TestRunnerProps) {
         </div>
       </div>
 
-      <Progress value={(answered / total) * 100} className="mb-6" />
+      <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+        <span>{answered}/{total} answered</span>
+        <span className={timeLeft <= 60 ? "text-red-500" : timeLeft <= 300 ? "text-amber-500" : ""}>
+          Time remaining
+        </span>
+      </div>
+      <Progress value={(answered / total) * 100} className="mb-1.5 h-2" />
+      <Progress
+        value={(timeLeft / (durationMin * 60)) * 100}
+        className={`mb-6 h-1.5 ${timeLeft <= 60 ? "[&>div]:bg-red-500" : timeLeft <= 300 ? "[&>div]:bg-amber-500" : "[&>div]:bg-brand-500"}`}
+      />
 
       <div className="grid md:grid-cols-[1fr_280px] gap-6">
         <div>

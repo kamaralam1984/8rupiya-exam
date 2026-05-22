@@ -95,14 +95,14 @@ export default async function ExamPage({
             <span>· ₹8 unlock</span>
           </div>
           <div className="mt-7 flex flex-wrap gap-3">
+            <Link href={`/test-config/${exam.slug}`}>
+              <Button size="lg">Custom Mock Test</Button>
+            </Link>
             <Link href={`/test/${exam.slug}-sample-mock`}>
-              <Button size="lg">Start Free Test</Button>
+              <Button size="lg" variant="glass">Quick Free Test</Button>
             </Link>
             <Link href={`/test/${exam.slug}-premium-mock-1`}>
-              <Button size="lg" variant="glass">Unlock Premium ₹8</Button>
-            </Link>
-            <Link href="/pricing">
-              <Button size="lg" variant="outline">View Plans</Button>
+              <Button size="lg" variant="outline">Unlock Premium ₹8</Button>
             </Link>
           </div>
         </div>

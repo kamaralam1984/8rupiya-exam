@@ -12,8 +12,8 @@ function fmt(s: number) {
 }
 
 export function TestTimer({
-  startedAt, durationMin, onExpire,
-}: { startedAt: number; durationMin: number; onExpire: () => void }) {
+  startedAt, durationMin, onExpire, onTick,
+}: { startedAt: number; durationMin: number; onExpire: () => void; onTick?: (remaining: number) => void }) {
   const total = durationMin * 60;
   const [left, setLeft] = useState(() => Math.max(0, total - Math.floor((Date.now() - startedAt) / 1000)));
 
@@ -22,11 +22,12 @@ export function TestTimer({
       const elapsed = Math.floor((Date.now() - startedAt) / 1000);
       const remaining = Math.max(0, total - elapsed);
       setLeft(remaining);
+      onTick?.(remaining);
       if (remaining <= 0) onExpire();
     };
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [startedAt, total, onExpire]);
+  }, [startedAt, total, onExpire, onTick]);
 
   const danger = left <= 60;
   const warn = left <= 300 && !danger;

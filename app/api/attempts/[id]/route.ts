@@ -11,7 +11,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     const a = await db.attempt.findUnique({
       where: { id },
       include: {
-        testSet: { select: { title: true, slug: true, durationMin: true } },
+        testSet: { select: { title: true, slug: true, durationMin: true, exam: { select: { slug: true } } } },
         answers: {
           include: {
             question: {

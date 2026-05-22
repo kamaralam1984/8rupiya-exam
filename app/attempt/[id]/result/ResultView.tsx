@@ -40,7 +40,7 @@ type Attempt = {
   score: number | null;
   accuracy: number | null;
   durationSec: number | null;
-  testSet: { title: string; slug: string; durationMin: number };
+  testSet: { title: string; slug: string; durationMin: number; exam: { slug: string } | null };
   answers: AnswerWithQ[];
   meta: {
     totalQ: number;
@@ -262,7 +262,9 @@ export function ResultView({ attemptId }: { attemptId: string }) {
         <Link href={`/test/${attempt.testSet.slug}`}>
           <Button variant="outline"><RefreshCw className="h-4 w-4" /> Retake test</Button>
         </Link>
-        <Link href="/exams"><Button>Try another exam</Button></Link>
+        <Link href={attempt.testSet.exam?.slug ? `/exams/${attempt.testSet.exam.slug}` : "/exams"}>
+          <Button>Try another exam</Button>
+        </Link>
       </div>
     </section>
   );
