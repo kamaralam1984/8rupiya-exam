@@ -43,9 +43,9 @@ export async function POST(req: Request) {
 
     const result = await completeJson<{ points: string[] }>({
       operation: "doubt",
-      systemPrompt:
+      system:
         "You are a helpful Indian exam coach. Give 3 short, practical study tips in Hindi based on student data. Return JSON: { points: [\"tip1\", \"tip2\", \"tip3\"] }",
-      userPrompt: prompt,
+      user: prompt,
       schema: { type: "object", properties: { points: { type: "array", items: { type: "string" } } }, required: ["points"] },
     });
 
