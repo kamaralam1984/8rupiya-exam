@@ -44,12 +44,11 @@ export async function POST(req: Request) {
     const result = await completeJson<{ points: string[] }>({
       operation: "doubt",
       system:
-        "You are a helpful Indian exam coach. Give 3 short, practical study tips in Hindi based on student data. Return JSON: { points: [\"tip1\", \"tip2\", \"tip3\"] }",
+        'You are a helpful Indian exam coach. Give 3 short, practical study tips in Hindi based on student data. Respond ONLY with valid JSON in this format: { "points": ["tip1", "tip2", "tip3"] }',
       user: prompt,
-      schema: { type: "object", properties: { points: { type: "array", items: { type: "string" } } }, required: ["points"] },
     });
 
-    const points: string[] = result.points ?? [];
+    const points: string[] = Array.isArray(result?.points) ? result.points : [];
     const text = points.map((p, i) => `${i + 1}. ${p}`).join("\n\n");
     return ok({ text });
   } catch (e) {
