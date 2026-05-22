@@ -151,7 +151,7 @@ export function ResultView({ attemptId }: { attemptId: string }) {
         <ResultStat icon={Clock} label="Time taken" value={fmtTime(attempt.durationSec)} />
       </div>
 
-      {subjects.length >= 3 && (
+      {subjects.length >= 2 && (
         <div className="mt-8 glass rounded-2xl p-6 gradient-border">
           <h2 className="font-display text-lg font-semibold mb-2">Subject radar</h2>
           <SubjectRadar
