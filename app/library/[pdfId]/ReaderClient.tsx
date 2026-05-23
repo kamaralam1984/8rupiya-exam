@@ -141,28 +141,26 @@ export function ReaderClient({
         {/* PDF viewer */}
         <div className={cn("min-h-0 bg-muted/30 flex flex-col", !panelOpen ? "" : "")}>
           {showHighlight && (
-            <div className="border-b border-emerald-500/30 bg-emerald-500/15 text-emerald-100 px-4 py-2.5 text-xs flex items-start gap-2">
-              <span className="mt-0.5 inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" aria-hidden />
+            <div className="border-b-2 border-emerald-500 bg-emerald-600/30 px-4 py-3 text-sm flex items-start gap-3">
+              <span className="mt-0.5 inline-block w-3 h-3 rounded-full bg-emerald-400 animate-pulse shrink-0" aria-hidden />
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-emerald-200">
-                  📖 Source highlight {initialPage ? `· Page ${initialPage}` : ""}
+                <p className="font-bold text-emerald-300 text-sm">
+                  📖 Yeh question is text se aaya hai {initialPage ? `· Page ${initialPage}` : ""}
                 </p>
-                <p className="mt-0.5 leading-snug">
-                  <mark className="bg-emerald-300/40 text-emerald-50 rounded px-1 py-0.5">
-                    {initialHighlight}
-                  </mark>
+                <p className="mt-1 leading-snug text-xs bg-emerald-900/50 border border-emerald-500/50 rounded-md px-3 py-2 text-emerald-100 font-medium">
+                  &ldquo;{initialHighlight}&rdquo;
                 </p>
-                <p className="mt-1 text-emerald-300/70">
-                  Scroll to highlighted page below — yeh wahi text hai jis se yeh question banta hai.
+                <p className="mt-1 text-xs text-emerald-400">
+                  Is topic ko book mein dhundho — galat jawab samajhne ke liye.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setHighlightDismissed(true)}
-                className="shrink-0 text-emerald-200/70 hover:text-emerald-100"
+                className="shrink-0 text-emerald-300 hover:text-white"
                 aria-label="Dismiss highlight"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
           )}
