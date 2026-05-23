@@ -551,9 +551,9 @@ function DeepExplain({ question }: { question: AnswerWithQ["question"] }) {
     setOpen(true);
   }
 
-  const hasBook = !!(question.pdfId && question.pdfPage);
+  const hasBook = !!question.pdfId;
   const bookHref = hasBook
-    ? `/library/${question.pdfId}?page=${question.pdfPage}${
+    ? `/library/${question.pdfId}?page=${question.pdfPage ?? 1}${
         question.pdfHighlight ? `&hl=${encodeURIComponent(question.pdfHighlight)}` : ""
       }`
     : null;
