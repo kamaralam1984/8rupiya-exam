@@ -1,14 +1,23 @@
 import { redirect } from "next/navigation";
-import { Hero } from "@/components/hero";
+import { HeroAI } from "@/components/hero-ai";
 import { ExamGrid } from "@/components/exam-grid";
-import { FeaturesSection } from "@/components/features-section";
-import { TrustStrip } from "@/components/trust-strip";
+import { FeaturesAI } from "@/components/features-ai";
+import { LiveClassesSection } from "@/components/live-classes-section";
+import { GoluAISection } from "@/components/golu-ai-section";
+import { GamificationSection } from "@/components/gamification-section";
+import { AiControlCenter } from "@/components/ai-control-center";
+import { SelectionShowcase } from "@/components/selection-showcase";
+import { PricingAI } from "@/components/pricing-ai";
+import { FinalCTA } from "@/components/final-cta";
 import { HowItWorks } from "@/components/how-it-works";
-import { Testimonials } from "@/components/testimonials";
 import { SubjectRow } from "@/components/subject-row";
+import { AppDownloadSection } from "@/components/app-download-section";
+import { ScholarshipBanner } from "@/components/scholarship-banner";
+import { PushOptIn } from "@/components/push-opt-in";
+import { BatchLaunchSection } from "@/components/batch-launch-section";
+import { YouTubeSection } from "@/components/youtube-section";
 import { SITE } from "@/lib/utils";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { readSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 
@@ -70,13 +79,23 @@ export default async function Home() {
   }
   return (
     <>
-      <Hero />
-      <TrustStrip />
+      <HeroAI />
       <ExamGrid />
+      <FeaturesAI />
+      <ScholarshipBanner />
+      <BatchLaunchSection />
+      <LiveClassesSection />
+      <YouTubeSection />
+      <GoluAISection />
+      <AiControlCenter />
+      <GamificationSection />
+      <SelectionShowcase />
       <HowItWorks />
       <SubjectRow />
-      <FeaturesSection />
-      <Testimonials />
+      <AppDownloadSection />
+      <PricingAI />
+      <FinalCTA />
+      <PushOptIn />
 
       {/* What is 8Rupia — branded, SEO + AdSense friendly long-form section */}
       <section id="about-8rupia" className="container py-16 md:py-20 max-w-4xl">
@@ -260,16 +279,16 @@ export default async function Home() {
       </section>
 
       <section className="container py-20">
-        <div className="glass rounded-3xl p-8 md:p-12 gradient-border text-center">
+        <div className="neon-card rounded-3xl p-8 md:p-12 text-center bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10">
           <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight">
-            Start your <span className="gradient-text">₹8 journey</span> today
+            Start your <span className="ai-gradient-text">₹8 journey</span> today
           </h2>
           <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
             Join lakhs of students who use {SITE.name} to study smarter, not longer.
           </p>
           <div className="mt-7 flex justify-center gap-3 flex-wrap">
-            <Link href="/exams"><Button size="lg">Explore Exams</Button></Link>
-            <Link href="/pricing"><Button size="lg" variant="outline">See Pricing</Button></Link>
+            <Link href="/exams" className="btn-ai">Explore Exams</Link>
+            <Link href="/pricing" className="btn-ghost-ai">See Pricing</Link>
           </div>
         </div>
       </section>

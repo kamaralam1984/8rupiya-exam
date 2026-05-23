@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Users, FileText, Brain, IndianRupee, ClipboardList, Loader2, ShieldAlert, BookOpen, ToggleRight, SlidersHorizontal, Cpu } from "lucide-react";
+import { Users, FileText, Brain, IndianRupee, ClipboardList, Loader2, ShieldAlert, BookOpen, ToggleRight, SlidersHorizontal, Cpu, TrendingUp, UserPlus, Radio, Bell } from "lucide-react";
 import { api } from "@/lib/api-client";
 
 type Stats = {
@@ -75,6 +75,10 @@ export function AdminHome() {
         <Tile href="/admin/features" icon={SlidersHorizontal} title="Features & Plan" body="Feature flags on/off · paid/free · ₹8 plan duration (month/year/lifetime)." highlight />
         <Tile href="/admin/audit" icon={ToggleRight} title="Audit Log" body="Every admin action recorded with actor + target." />
         <Tile href="/admin/jobs" icon={Cpu} title="Background Jobs" body="PDF ingest, AI generate, predict jobs — status, failures, retries." />
+        <Tile href="/admin/revenue" icon={TrendingUp} title="Revenue Analytics" body="MRR, last-30-day revenue, refund rate aur purpose-wise breakdown." />
+        <Tile href="/admin/referrals" icon={UserPlus} title="Referral Analytics" body="Top referrers, conversion-to-paid aur growth signals." />
+        <Tile href="/admin/live" icon={Radio} title="Live Class Controls" body="Schedule, start, end aur replay links manage karo." />
+        <Tile href="/admin/push" icon={Bell} title="Push Broadcasts" body="Send notification to all subscribed devices with VAPID." />
       </div>
     </section>
   );

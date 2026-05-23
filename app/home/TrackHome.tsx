@@ -244,7 +244,7 @@ export function TrackHome({
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             {(subjects.length > 0 ? subjects.map((s) => s.name) : track.focusSubjects).map((label) => (
-              <span key={label} className={cn("inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-full border border-border", track.badge)}>
+              <span key={label} className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-full border border-[#1e3a8a]/30 text-[#1e3a8a] dark:text-foreground dark:border-border font-medium">
                 <BookOpen className="h-3 w-3" /> {label}
               </span>
             ))}
@@ -301,7 +301,7 @@ export function TrackHome({
                         </p>
                       </div>
                       <div className="text-right text-xs">
-                        <p className={cn("font-medium", a.status === "SUBMITTED" ? "text-emerald-400" : "text-amber-400")}>{a.status}</p>
+                        <p className={cn("font-medium", a.status === "SUBMITTED" ? "text-[#991b1b] dark:text-emerald-400" : "text-amber-700 dark:text-amber-400")}>{a.status}</p>
                         {a.accuracy !== null && (
                           <p className="text-muted-foreground">{Math.round((a.accuracy ?? 0) * 100)}% acc</p>
                         )}

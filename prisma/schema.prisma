@@ -560,3 +560,30 @@ model EmailOtp {
   @@index([email, purpose, expiresAt])
   @@index([userId, purpose])
 }
+
+model ChatRoom {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  name        String
+  examSlug    String?
+  description String?
+  isPaid      Boolean       @default(false)
+  active      Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  messages    ChatMessage[]
+
+  @@index([active, examSlug])
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String
+  body      String   @db.VarChar(800)
+  createdAt DateTime @default(now())
+
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, createdAt])
+  @@index([userId, createdAt])
+}

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X, LogIn, UserPlus, LayoutDashboard, User, BookOpenText, IndianRupee, Newspaper, Info } from "lucide-react";
+import { Menu, X, LogIn, UserPlus, LayoutDashboard, User, BookOpenText, IndianRupee, Newspaper, Info, Swords, Flame, Brain, Sparkles, Users, ShoppingBag, Trophy, GraduationCap, MapPin } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -11,9 +11,24 @@ import { useUser } from "@/lib/use-user";
 
 const NAV = [
   { href: "/exams",   label: "Exams",   icon: BookOpenText },
+  { href: "/dpp",     label: "DPP",     icon: Flame },
+  { href: "/battle",  label: "Battle",  icon: Swords },
   { href: "/pricing", label: "Pricing", icon: IndianRupee },
-  { href: "/blog",    label: "Blog",    icon: Newspaper },
-  { href: "/about",   label: "About",   icon: Info },
+];
+
+const MORE_NAV = [
+  { href: "/probability",  label: "Probability",  icon: Sparkles },
+  { href: "/career",       label: "Career AI",    icon: Brain },
+  { href: "/revise",       label: "Revise",       icon: Brain },
+  { href: "/ncert",        label: "NCERT",        icon: BookOpenText },
+  { href: "/community",    label: "Community",    icon: Users },
+  { href: "/store",        label: "Store",        icon: ShoppingBag },
+  { href: "/voice-tutor",  label: "Voice Tutor",  icon: Sparkles },
+  { href: "/summaries",    label: "Summaries",    icon: Newspaper },
+  { href: "/motivation",   label: "Motivation",   icon: Info },
+  { href: "/teachers",     label: "Teachers",     icon: GraduationCap },
+  { href: "/achievements", label: "Achievements", icon: Trophy },
+  { href: "/centers",      label: "Centers",      icon: MapPin },
 ];
 
 export function Navbar() {
@@ -37,6 +52,25 @@ export function Navbar() {
                 {n.label}
               </Link>
             ))}
+            <div className="relative group">
+              <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition">
+                <Sparkles className="h-4 w-4 text-accent/80" /> More
+              </button>
+              <div className="absolute right-0 top-full hidden group-hover:block pt-1 z-50">
+                <div className="glass border border-border/40 rounded-xl p-1.5 w-52 shadow-xl">
+                  {MORE_NAV.map((m) => (
+                    <Link
+                      key={m.href}
+                      href={m.href}
+                      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-muted/60"
+                    >
+                      <m.icon className="h-4 w-4 text-accent/80" />
+                      {m.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
           </nav>
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <LangToggle />
@@ -69,6 +103,19 @@ export function Navbar() {
                   >
                     <n.icon className="h-4 w-4 text-accent/80" />
                     {n.label}
+                  </Link>
+                ))}
+                <div className="my-1 border-t border-border/40" />
+                <p className="px-3 pt-1 text-[10px] uppercase tracking-wider text-muted-foreground">AI Tools</p>
+                {MORE_NAV.map((m) => (
+                  <Link
+                    key={m.href}
+                    href={m.href}
+                    onClick={close}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-muted"
+                  >
+                    <m.icon className="h-4 w-4 text-accent/80" />
+                    {m.label}
                   </Link>
                 ))}
                 <div className="my-1 border-t border-border/40" />
