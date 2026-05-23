@@ -56,6 +56,19 @@ export async function POST(req: Request) {
       });
     }
 
+    // Last fallback: any question for this exam ignoring subject filter
+    if (questions.length === 0 && Object.keys(subjectFilter).length > 0) {
+      questions = await db.question.findMany({
+        where: {
+          OR: [
+            { examSlug: body.examSlug },
+            { subject: { exam: { slug: body.examSlug } } },
+          ],
+        },
+        select: { id: true },
+      });
+    }
+
     if (questions.length === 0) {
       return fail("No questions available for this exam yet.", 404, "NO_QUESTIONS");
     }
