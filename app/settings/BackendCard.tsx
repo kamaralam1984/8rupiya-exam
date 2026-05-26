@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { ConnectBackend } from "@/components/connect-backend";
 
 export function BackendCard() {
   const [open, setOpen] = useState(false);
@@ -49,30 +50,7 @@ export function BackendCard() {
         </button>
       </div>
 
-      {open && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.5)",
-            zIndex: 9999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div style={{ background: "white", borderRadius: "1rem", padding: "2rem", minWidth: "300px" }}>
-            <h3 style={{ fontWeight: 700, marginBottom: "1rem" }}>Connect Backend</h3>
-            <p style={{ fontSize: "14px", color: "#6b7280" }}>Modal working!</p>
-            <button
-              onClick={() => setOpen(false)}
-              style={{ marginTop: "1rem", padding: "8px 16px", cursor: "pointer" }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      <ConnectBackend open={open} onClose={() => setOpen(false)} />
     </div>
   );
 }
