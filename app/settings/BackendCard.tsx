@@ -1,43 +1,37 @@
 "use client";
 import { useState } from "react";
-import { Plug } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ConnectBackend } from "@/components/connect-backend";
-import { useToast } from "@/components/ui/toaster";
 
 export function BackendCard() {
   const [open, setOpen] = useState(false);
-  const toast = useToast();
 
   return (
     <section className="container max-w-xl pb-20">
       <div className="paper-card p-6">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-violet-500/15 text-violet-500">
-              <Plug className="h-4 w-4" />
-            </span>
-            <div>
-              <h2 className="font-display font-semibold">Backend Integration</h2>
-              <p className="text-xs text-muted-foreground">
-                Connect your admin panel via API Key &amp; Secret Token
-              </p>
-            </div>
+          <div>
+            <h2 className="font-display font-semibold">Backend Integration</h2>
+            <p className="text-xs text-muted-foreground">
+              Connect your admin panel via API Key &amp; Secret Token
+            </p>
           </div>
-          <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+          <button
+            onClick={() => setOpen(true)}
+            className="rounded-lg border border-border px-4 py-2 text-sm hover:bg-muted"
+          >
             Connect
-          </Button>
+          </button>
         </div>
       </div>
-
-      <ConnectBackend
-        open={open}
-        onClose={() => setOpen(false)}
-        onConnected={() => {
-          setOpen(false);
-          toast("Backend connected successfully.", "success");
-        }}
-      />
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="rounded-2xl bg-white p-8 shadow-2xl">
+            <p className="font-semibold">Connect Backend</p>
+            <button onClick={() => setOpen(false)} className="mt-4 text-sm underline">
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
