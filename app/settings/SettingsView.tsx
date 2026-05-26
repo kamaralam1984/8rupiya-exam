@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Loader2, Save, MailCheck, ShieldAlert } from "lucide-react";
+import { Loader2, Save, MailCheck, ShieldAlert, Plug } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConnectBackend } from "@/components/connect-backend";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api-client";
 import { useToast } from "@/components/ui/toaster";
@@ -14,6 +15,7 @@ export function SettingsView() {
   const [name, setName] = useState("");
   const [lang, setLang] = useState<"en" | "hi">("en");
   const [saving, setSaving] = useState(false);
+  const [connectOpen, setConnectOpen] = useState(false);
 
   useEffect(() => {
     if (user) { setName(user.name ?? ""); setLang((user.language as "en"|"hi") ?? "en"); }
@@ -120,6 +122,29 @@ export function SettingsView() {
           Change password
         </Link>
       </div>
+
+      <div className="mt-6 paper-card p-6">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-violet-500/15 text-violet-500">
+              <Plug className="h-4 w-4" />
+            </span>
+            <div>
+              <h2 className="font-display font-semibold">Backend Integration</h2>
+              <p className="text-xs text-muted-foreground">Connect your admin panel via API Key &amp; Secret Token</p>
+            </div>
+          </div>
+          <Button size="sm" variant="outline" onClick={() => setConnectOpen(true)}>
+            Connect
+          </Button>
+        </div>
+      </div>
+
+      <ConnectBackend
+        open={connectOpen}
+        onClose={() => setConnectOpen(false)}
+        onConnected={() => { setConnectOpen(false); toast("Backend connected successfully.", "success"); }}
+      />
     </section>
   );
 }
