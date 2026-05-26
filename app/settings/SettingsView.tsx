@@ -2,8 +2,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2, Save, MailCheck, ShieldAlert, Plug } from "lucide-react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
-import { ConnectBackend } from "@/components/connect-backend";
+
+const ConnectBackend = dynamic(
+  () => import("@/components/connect-backend").then((m) => m.ConnectBackend),
+  { ssr: false }
+);
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api-client";
 import { useToast } from "@/components/ui/toaster";
