@@ -1,18 +1,18 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Loader2, Save, MailCheck, ShieldAlert, Plug } from "lucide-react";
 import dynamic from "next/dynamic";
+import { Loader2, Save, MailCheck, ShieldAlert, Plug } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { api } from "@/lib/api-client";
+import { useToast } from "@/components/ui/toaster";
+import { useUser } from "@/lib/use-user";
 
 const ConnectBackend = dynamic(
   () => import("@/components/connect-backend").then((m) => m.ConnectBackend),
   { ssr: false }
 );
-import { Input } from "@/components/ui/input";
-import { api } from "@/lib/api-client";
-import { useToast } from "@/components/ui/toaster";
-import { useUser } from "@/lib/use-user";
 
 export function SettingsView() {
   const { user, loading, setUser } = useUser();
@@ -23,7 +23,10 @@ export function SettingsView() {
   const [connectOpen, setConnectOpen] = useState(false);
 
   useEffect(() => {
-    if (user) { setName(user.name ?? ""); setLang((user.language as "en"|"hi") ?? "en"); }
+    if (user) {
+      setName(user.name ?? "");
+      setLang((user.language as "en" | "hi") ?? "en");
+    }
   }, [user]);
 
   if (loading) {
@@ -62,6 +65,8 @@ export function SettingsView() {
   return (
     <section className="container pt-10 pb-20 max-w-xl">
       <h1 className="font-display text-3xl font-bold tracking-tight">Account Settings</h1>
+
+      {/* Profile card */}
       <div className="mt-6 glass rounded-2xl p-6 gradient-border space-y-4">
         <label className="block">
           <span className="text-xs text-muted-foreground">Display name</span>
@@ -83,9 +88,13 @@ export function SettingsView() {
           </select>
         </label>
         <Button onClick={save} disabled={saving}>
-          {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</> : <><Save className="h-4 w-4" /> Save</>}
+          {saving
+            ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</>
+            : <><Save className="h-4 w-4" /> Save</>}
         </Button>
       </div>
+
+      {/* Email verification card */}
       {user.email && (
         <div className="mt-6 paper-card p-6">
           <div className="flex items-center gap-2">
@@ -96,9 +105,7 @@ export function SettingsView() {
                 </span>
                 <div>
                   <h2 className="font-display font-semibold">Email verified</h2>
-                  <p className="text-xs text-muted-foreground">
-                    {user.email} confirm ho chuka hai ✓
-                  </p>
+                  <p className="text-xs text-muted-foreground">{user.email} confirm ho chuka hai ✓</p>
                 </div>
               </>
             ) : (
@@ -121,6 +128,7 @@ export function SettingsView() {
         </div>
       )}
 
+      {/* Security card */}
       <div className="mt-6 paper-card p-6">
         <h2 className="font-display font-semibold mb-2">Security</h2>
         <Link href="/forgot-password" className="text-sm text-brand-600 hover:underline">
@@ -128,6 +136,7 @@ export function SettingsView() {
         </Link>
       </div>
 
+      {/* Backend Integration card */}
       <div className="mt-6 paper-card p-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -136,7 +145,9 @@ export function SettingsView() {
             </span>
             <div>
               <h2 className="font-display font-semibold">Backend Integration</h2>
-              <p className="text-xs text-muted-foreground">Connect your admin panel via API Key &amp; Secret Token</p>
+              <p className="text-xs text-muted-foreground">
+                Connect your admin panel via API Key &amp; Secret Token
+              </p>
             </div>
           </div>
           <Button size="sm" variant="outline" onClick={() => setConnectOpen(true)}>
@@ -148,7 +159,10 @@ export function SettingsView() {
       <ConnectBackend
         open={connectOpen}
         onClose={() => setConnectOpen(false)}
-        onConnected={() => { setConnectOpen(false); toast("Backend connected successfully.", "success"); }}
+        onConnected={() => {
+          setConnectOpen(false);
+          toast("Backend connected successfully.", "success");
+        }}
       />
     </section>
   );
