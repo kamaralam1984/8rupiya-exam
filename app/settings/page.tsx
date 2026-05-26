@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SettingsView } from "./SettingsView";
+import { BackendCard } from "./BackendCard";
 
 export const metadata: Metadata = {
   title: "Account Settings",
@@ -7,5 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default function SettingsPage() {
-  return <SettingsView />;
+  return (
+    <>
+      <SettingsView />
+      <BackendCard />
+    </>
+  );
 }
